@@ -59,6 +59,6 @@ class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
   }
 
   companion object {
-    const val NAME = "VisionCameraFaceTfliteModule"
+    const val NAME = "VisionCameraFaceDetectionModule"
   }
 }
