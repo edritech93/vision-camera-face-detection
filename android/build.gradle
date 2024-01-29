@@ -91,5 +91,6 @@ dependencies {
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   api project(":react-native-vision-camera")
+  implementation 'com.google.android.gms:play-services-mlkit-face-detection:17.1.0'
 }
 

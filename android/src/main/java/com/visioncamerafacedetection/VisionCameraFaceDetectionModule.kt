@@ -1,11 +1,6 @@
 package com.visioncamerafacedetection
 
-import android.content.res.AssetManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.RectF
 import android.util.Base64
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -15,15 +10,8 @@ import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import org.tensorflow.lite.Interpreter
-import java.io.FileInputStream
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.FloatBuffer
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
 
-class VisionCameraFaceDetection(private val reactContext: ReactApplicationContext) :
+class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
 
   private var faceDetectorOptions = FaceDetectorOptions.Builder()
@@ -54,8 +42,8 @@ class VisionCameraFaceDetection(private val reactContext: ReactApplicationContex
         map["leftEyeOpenProbability"] = face.leftEyeOpenProbability!!.toDouble()
         map["rightEyeOpenProbability"] = face.rightEyeOpenProbability!!.toDouble()
         map["smilingProbability"] = face.smilingProbability!!.toDouble()
-        map["bounds"] = processBoundingBox(face.boundingBox)
-        map["contours"] = processFaceContours(face)
+        map["bounds"] = FaceHelper().processBoundingBox(face.boundingBox)
+        map["contours"] = FaceHelper().processFaceContours(face)
         promise.resolve(map)
       } else {
         promise.resolve(null)
