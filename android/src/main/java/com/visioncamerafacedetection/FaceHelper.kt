@@ -60,19 +60,23 @@ class FaceHelper {
       "LEFT_CHEEK",
       "RIGHT_CHEEK"
     )
-    val faceContoursTypesMap: MutableMap<String, Any> = HashMap()
+    val map: MutableMap<String, Any> = HashMap()
     for (i in faceContoursTypesStrings.indices) {
       val contour = face.getContour(faceContoursTypes[i])
-      val points = contour!!.points
+      val points = contour?.points
       val pointsArray: MutableCollection<Any> = ArrayList()
-      for (j in points.indices) {
-        val currentPointsMap: MutableMap<String, Any> = HashMap()
-        currentPointsMap["x"] = points[j].x.toDouble()
-        currentPointsMap["y"] = points[j].y.toDouble()
-        pointsArray.add(currentPointsMap)
+      if (points != null) {
+        for (j in points.indices) {
+          val currentPointsMap: MutableMap<String, Any> = HashMap()
+          currentPointsMap["x"] = points[j].x.toDouble()
+          currentPointsMap["y"] = points[j].y.toDouble()
+          pointsArray.add(currentPointsMap)
+        }
       }
-      faceContoursTypesMap[faceContoursTypesStrings[contour.faceContourType - 1]] = pointsArray
+      if (contour != null) {
+        map[faceContoursTypesStrings[contour.faceContourType - 1]] = pointsArray
+      }
     }
-    return faceContoursTypesMap
+    return map
   }
 }

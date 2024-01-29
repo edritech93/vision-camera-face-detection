@@ -43,7 +43,7 @@ class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
         map["rightEyeOpenProbability"] = face.rightEyeOpenProbability!!.toDouble()
         map["smilingProbability"] = face.smilingProbability!!.toDouble()
         map["bounds"] = FaceHelper().processBoundingBox(face.boundingBox)
-        map["contours"] = FaceHelper().processFaceContours(face)
+//        map["contours"] = FaceHelper().processFaceContours(face)
         promise.resolve(map)
       } else {
         promise.resolve(null)

@@ -37,7 +37,7 @@ class VisionCameraFaceDetectionPlugin(proxy: VisionCameraProxy, options: Map<Str
         map["rightEyeOpenProbability"] = face.rightEyeOpenProbability!!.toDouble()
         map["smilingProbability"] = face.smilingProbability!!.toDouble()
         map["bounds"] = FaceHelper().processBoundingBox(face.boundingBox)
-        map["contours"] = FaceHelper().processFaceContours(face)
+//        map["contours"] = FaceHelper().processFaceContours(face)
         return map
       }
       return null
