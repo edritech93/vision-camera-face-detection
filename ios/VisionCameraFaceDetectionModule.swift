@@ -26,7 +26,8 @@ class VisionCameraFaceDetectionModule: NSObject {
                 let faces: [Face] =  try VisionCameraFaceDetectionPlugin.faceDetector.results(in: image)
                 if (!faces.isEmpty){
                     guard let face = faces.first else {
-                        return nil
+                        resolve(nil)
+                        return
                     }
                     var map: [String: Any] = [:]
                     map["rollAngle"] = face.headEulerAngleZ  // Head is tilted sideways rotZ degrees
@@ -35,8 +36,8 @@ class VisionCameraFaceDetectionModule: NSObject {
                     map["leftEyeOpenProbability"] = face.leftEyeOpenProbability
                     map["rightEyeOpenProbability"] = face.rightEyeOpenProbability
                     map["smilingProbability"] = face.smilingProbability
-                    map["bounds"] = VisionCameraFaceDetectionPlugin.processBoundingBox(from: face)
-                    map["contours"] = VisionCameraFaceDetectionPlugin.processContours(from: face)
+                    map["bounds"] = FaceHelper.processBoundingBox(from: face)
+                    map["contours"] = FaceHelper.processContours(from: face)
                     resolve(map)
                 } else {
                     resolve(nil)

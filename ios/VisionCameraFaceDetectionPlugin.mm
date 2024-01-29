@@ -11,13 +11,13 @@
 
 + (void)load
 {
-  [FrameProcessorPluginRegistry addFrameProcessorPlugin:@"scanFace"
-                                        withInitializer:^FrameProcessorPlugin* _Nonnull(VisionCameraProxyHolder* _Nonnull proxy,         
-                                                                                        NSDictionary* _Nullable options) {               
-                                          return [[VisionCameraFaceDetectionPlugin alloc] initWithProxy:proxy withOptions:options];
-                                        }];
-}                                                                                                                                        
-                                                                                                                                         
+    [FrameProcessorPluginRegistry addFrameProcessorPlugin:@"scanFace"
+                                          withInitializer:^FrameProcessorPlugin* _Nonnull(VisionCameraProxyHolder* _Nonnull proxy,
+                                                                                          NSDictionary* _Nullable options) {
+        return [[VisionCameraFaceDetectionPlugin alloc] initWithProxy:proxy withOptions:options];
+    }];
+}
+
 @end
 
 #endif
