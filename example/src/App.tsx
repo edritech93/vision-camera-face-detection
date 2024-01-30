@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Dimensions, SafeAreaView, StyleSheet } from 'react-native';
+import { Button, Dimensions, SafeAreaView, StyleSheet } from 'react-native';
 import {
   Camera,
   useFrameProcessor,
@@ -12,6 +12,7 @@ import {
   scanFaces,
   type FaceBoundType,
   type FaceType,
+  detectFromBase64,
 } from 'vision-camera-face-detection';
 import Animated, {
   useSharedValue as useSharedValueR,
@@ -19,6 +20,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { Worklets, useSharedValue } from 'react-native-worklets-core';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { getPermissionReadStorage } from './permission';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -111,6 +114,35 @@ export default function App() {
     console.log('Camera initialized!');
   }, []);
 
+  const _onOpenImage = async () => {
+    await getPermissionReadStorage().catch((error: Error) => {
+      console.log(error);
+      return;
+    });
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      includeBase64: true,
+    }).catch((error) => {
+      console.log(error);
+      return;
+    });
+    if (
+      result &&
+      result.assets &&
+      result.assets.length > 0 &&
+      result.assets[0]?.uri &&
+      result.assets[0]?.base64
+    ) {
+      const base64Face = await detectFromBase64(result.assets[0].base64).catch(
+        (error: Error) => {
+          console.log(error);
+          return;
+        }
+      );
+      console.log('base64Face => ', base64Face);
+    }
+  };
+
   if (device != null && format != null && hasPermission) {
     const pixelFormat = format.pixelFormats.includes('yuv') ? 'yuv' : 'native';
     return (
@@ -136,6 +168,7 @@ export default function App() {
           frameProcessor={frameProcessor}
         />
         <Animated.View style={faceAnimStyle} />
+        <Button title={'Open Photo'} onPress={_onOpenImage} />
       </SafeAreaView>
     );
   } else {

@@ -10896,6 +10896,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-image-picker@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "react-native-image-picker@npm:7.1.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 7f5c16dbcde719367e8fea7e05dd0ca8cb4cb4d163ce3fd093440fde69ff536dfb12f8b14a82b3d306785b7a5609e99042a981050631aa91cffb0a410c056ef9
+  languageName: node
+  linkType: hard
+
+"react-native-permissions@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "react-native-permissions@npm:4.1.0"
+  peerDependencies:
+    react: ">=18.1.0"
+    react-native: ">=0.70.0"
+    react-native-windows: ">=0.70.0"
+  peerDependenciesMeta:
+    react-native-windows:
+      optional: true
+  checksum: 25bab1d609573d9ba3082e651c9bd9eeb91de7ded6ee1f74f912be43388a2082928f211eda45e1d229be54fcf8fe107e571232be0cf288e33062d67063bf4b62
+  languageName: node
+  linkType: hard
+
 "react-native-reanimated@npm:^3.6.2":
   version: 3.6.2
   resolution: "react-native-reanimated@npm:3.6.2"
@@ -13011,6 +13035,8 @@ __metadata:
     pod-install: ^0.1.0
     react: 18.2.0
     react-native: 0.73.3
+    react-native-image-picker: ^7.1.0
+    react-native-permissions: ^4.1.0
     react-native-reanimated: ^3.6.2
     react-native-vision-camera: ^3.8.2
     react-native-worklets-core: ^0.2.4
