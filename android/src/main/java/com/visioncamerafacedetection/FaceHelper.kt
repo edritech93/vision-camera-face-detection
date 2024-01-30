@@ -1,9 +1,13 @@
 package com.visioncamerafacedetection
 
+import android.graphics.Bitmap
 import android.graphics.Rect
+import android.util.Base64
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceContour
+import java.io.ByteArrayOutputStream
 import kotlin.math.ceil
+
 
 class FaceHelper {
   fun processBoundingBox(boundingBox: Rect): MutableMap<String, Any> {
@@ -78,5 +82,12 @@ class FaceHelper {
       }
     }
     return map
+  }
+
+  fun getBase64Image(bitmap: Bitmap): String? {
+    val byteArrayOutputStream = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+    val byteArray = byteArrayOutputStream.toByteArray()
+    return Base64.encodeToString(byteArray, Base64.DEFAULT)
   }
 }

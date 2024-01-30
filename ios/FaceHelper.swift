@@ -85,4 +85,15 @@ class FaceHelper {
             "boundingCenterY": frameRect.midY
         ]
     }
+    
+    static func getImageFaceFromUIImage(from image: UIImage, rectImage: CGRect) -> UIImage? {
+        let imageRef: CGImage = (image.cgImage?.cropping(to: rectImage)!)!
+        let imageCrop: UIImage = UIImage(cgImage: imageRef, scale: 0.5, orientation: image.imageOrientation)
+        return imageCrop
+    }
+    
+    static func convertImageToBase64(image: UIImage) -> String {
+        let imageData = image.pngData()!
+        return imageData.base64EncodedString()
+    }
 }

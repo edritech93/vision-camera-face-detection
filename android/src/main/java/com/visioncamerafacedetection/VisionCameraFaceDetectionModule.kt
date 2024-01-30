@@ -1,6 +1,10 @@
 package com.visioncamerafacedetection
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.RectF
 import android.util.Base64
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -10,6 +14,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+
 
 class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
@@ -33,18 +38,17 @@ class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
       val faces = Tasks.await(task)
       if (faces.size > 0) {
         val face = faces[0]
-        val map: MutableMap<String, Any> = HashMap()
-        map["rollAngle"] =
-          face.headEulerAngleZ.toDouble()
-        map["pitchAngle"] =
-          face.headEulerAngleX.toDouble()
-        map["yawAngle"] = face.headEulerAngleY.toDouble()
-        map["leftEyeOpenProbability"] = face.leftEyeOpenProbability!!.toDouble()
-        map["rightEyeOpenProbability"] = face.rightEyeOpenProbability!!.toDouble()
-        map["smilingProbability"] = face.smilingProbability!!.toDouble()
-        map["bounds"] = FaceHelper().processBoundingBox(face.boundingBox)
-//        map["contours"] = FaceHelper().processFaceContours(face)
-        promise.resolve(map)
+        val bmpFaceStorage =
+          Bitmap.createBitmap(112, 112, Bitmap.Config.ARGB_8888)
+        val faceBB = RectF(face.boundingBox)
+        val cvFace = Canvas(bmpFaceStorage)
+        val sx = 112 / faceBB.width()
+        val sy = 112 / faceBB.height()
+        val matrix = Matrix()
+        matrix.postTranslate(-faceBB.left, -faceBB.top)
+        matrix.postScale(sx, sy)
+        cvFace.drawBitmap(bmpStorageResult, matrix, null)
+        promise.resolve(FaceHelper().getBase64Image(bmpFaceStorage))
       } else {
         promise.resolve(null)
       }

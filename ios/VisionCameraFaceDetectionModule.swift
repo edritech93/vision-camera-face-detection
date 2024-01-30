@@ -19,7 +19,7 @@ class VisionCameraFaceDetectionModule: NSObject {
     @objc(detectFromBase64:withResolver:withRejecter:)
     func detectFromBase64(imageString: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
         let stringData = Data(base64Encoded: imageString) ?? nil
-        let uiImage = UIImage(data: stringData!)        
+        let uiImage = UIImage(data: stringData!)
         if (uiImage != nil) {
             let image = VisionImage(image: uiImage!)
             do {
@@ -29,16 +29,9 @@ class VisionCameraFaceDetectionModule: NSObject {
                         resolve(nil)
                         return
                     }
-                    var map: [String: Any] = [:]
-                    map["rollAngle"] = face.headEulerAngleZ  // Head is tilted sideways rotZ degrees
-                    map["pitchAngle"] = face.headEulerAngleX  // Head is rotated to the uptoward rotX degrees
-                    map["yawAngle"] = face.headEulerAngleY   // Head is rotated to the right rotY degrees
-                    map["leftEyeOpenProbability"] = face.leftEyeOpenProbability
-                    map["rightEyeOpenProbability"] = face.rightEyeOpenProbability
-                    map["smilingProbability"] = face.smilingProbability
-                    map["bounds"] = FaceHelper.processBoundingBox(from: face)
-                    map["contours"] = FaceHelper.processContours(from: face)
-                    resolve(map)
+                    let faceFrame = face.frame
+                    let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage!, rectImage: faceFrame)
+                    resolve(FaceHelper.convertImageToBase64(image:imageCrop!))
                 } else {
                     resolve(nil)
                 }
