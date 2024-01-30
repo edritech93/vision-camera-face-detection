@@ -18,28 +18,34 @@ class VisionCameraFaceDetectionModule: NSObject {
     
     @objc(detectFromBase64:withResolver:withRejecter:)
     func detectFromBase64(imageString: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
-        let stringData = Data(base64Encoded: imageString) ?? nil
-        let uiImage = UIImage(data: stringData!)
-        if (uiImage != nil) {
-            let image = VisionImage(image: uiImage!)
-            do {
-                let faces: [Face] =  try VisionCameraFaceDetectionPlugin.faceDetector.results(in: image)
-                if (!faces.isEmpty){
-                    guard let face = faces.first else {
-                        resolve(nil)
-                        return
-                    }
-                    let faceFrame = face.frame
-                    let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage!, rectImage: faceFrame)
-                    resolve(FaceHelper.convertImageToBase64(image:imageCrop!))
-                } else {
-                    resolve(nil)
-                }
-            } catch {
-                reject("Error", error.localizedDescription, error)
+        guard let stringData = Data(base64Encoded: imageString) else {
+            print("Error base64 encoded")
+            return
+        }
+        guard let uiImage = UIImage(data: stringData) else {
+            print("UIImage can't created")
+            return
+        }
+        let image = VisionImage(image: uiImage)
+        image.orientation = .up
+        weak var weakSelf = self
+        print("image \(image)")
+        VisionCameraFaceDetectionModule.faceDetector.process(image) { faces, error in
+            guard weakSelf != nil else {
+                print("Self is nil!")
+                return
             }
-        } else {
-            resolve(nil)
+            guard error == nil, let faces = faces, !faces.isEmpty else {
+                print("Faces is empty")
+                resolve("")
+                return
+            }
+            for face in faces {
+                let faceFrame = face.frame
+                let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage, rectImage: faceFrame)
+                resolve(FaceHelper.convertImageToBase64(image:imageCrop!))
+                return
+            }
         }
     }
 }
