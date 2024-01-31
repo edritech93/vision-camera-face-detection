@@ -29,7 +29,6 @@ class VisionCameraFaceDetectionModule: NSObject {
         let image = VisionImage(image: uiImage)
         image.orientation = .up
         weak var weakSelf = self
-        print("image \(image)")
         VisionCameraFaceDetectionModule.faceDetector.process(image) { faces, error in
             guard weakSelf != nil else {
                 print("Self is nil!")
@@ -40,12 +39,10 @@ class VisionCameraFaceDetectionModule: NSObject {
                 resolve("")
                 return
             }
-            for face in faces {
-                let faceFrame = face.frame
-                let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage, rectImage: faceFrame)
-                resolve(FaceHelper.convertImageToBase64(image:imageCrop!))
-                return
-            }
+            let face = faces.first
+            let faceFrame = face!.frame
+            let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage, rectImage: faceFrame)
+            resolve(FaceHelper.convertImageToBase64(image:imageCrop!))
         }
     }
 }
