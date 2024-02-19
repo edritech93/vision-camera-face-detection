@@ -1,5 +1,6 @@
 package com.visioncamerafacedetection
 
+import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -14,9 +15,15 @@ import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.FloatBuffer
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 
-
-class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
+class VisionCameraFaceDetectionModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
 
   private var faceDetectorOptions = FaceDetectorOptions.Builder()
@@ -27,6 +34,32 @@ class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
     .build()
 
   private var faceDetector = FaceDetection.getClient(faceDetectorOptions)
+
+  @ReactMethod
+  private fun initTensor(modelFile: String = "mobile_face_net", count: Int = 1, promise: Promise) {
+    try {
+      val assetManager = reactContext.assets
+      val byteFile: MappedByteBuffer = loadModelFile(assetManager, modelFile)
+      val options = Interpreter.Options()
+      options.numThreads = count
+      interpreter = Interpreter(byteFile, options)
+      interpreter?.allocateTensors()
+      promise.resolve("initialization tflite success")
+    } catch (e: Exception) {
+      e.printStackTrace()
+      promise.reject(Throwable(e))
+    }
+  }
+
+  @Throws(IOException::class)
+  private fun loadModelFile(assets: AssetManager, modelFilename: String): MappedByteBuffer {
+    val fileDescriptor = assets.openFd("$modelFilename.tflite")
+    val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+    val fileChannel = inputStream.channel
+    val startOffset = fileDescriptor.startOffset
+    val declaredLength = fileDescriptor.declaredLength
+    return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+  }
 
   @ReactMethod
   fun detectFromBase64(imageString: String?, promise: Promise) {
@@ -48,7 +81,12 @@ class VisionCameraFaceDetectionModule(reactContext: ReactApplicationContext) :
         matrix.postTranslate(-faceBB.left, -faceBB.top)
         matrix.postScale(sx, sy)
         cvFace.drawBitmap(bmpStorageResult, matrix, null)
-        promise.resolve(FaceHelper().getBase64Image(bmpFaceStorage))
+        val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceStorage)
+        val output: FloatBuffer = FloatBuffer.allocate(192)
+        interpreter?.run(input, output)
+        val map: MutableMap<String, Any> = HashMap()
+        map["data"] = output.array()
+        promise.resolve(map)
       } else {
         promise.resolve(null)
       }

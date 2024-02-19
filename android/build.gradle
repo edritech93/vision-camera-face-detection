@@ -92,5 +92,7 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   api project(":react-native-vision-camera")
   implementation 'com.google.android.gms:play-services-mlkit-face-detection:17.1.0'
+  implementation 'org.tensorflow:tensorflow-lite:2.11.0'
+  implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
 }
 

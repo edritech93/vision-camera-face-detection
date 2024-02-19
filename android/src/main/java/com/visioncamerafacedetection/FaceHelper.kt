@@ -5,11 +5,29 @@ import android.graphics.Rect
 import android.util.Base64
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceContour
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 import kotlin.math.ceil
 
+var interpreter: Interpreter? = null
 
 class FaceHelper {
+
+  private val imageTensorProcessor: ImageProcessor = ImageProcessor.Builder()
+    .add(ResizeOp(112, 112, ResizeOp.ResizeMethod.BILINEAR))
+    .add(NormalizeOp(127.5f, 127.5f))
+    .build()
+
+  fun bitmap2ByteBuffer(bitmap: Bitmap?): ByteBuffer {
+    val imageTensor: TensorImage = imageTensorProcessor.process(TensorImage.fromBitmap(bitmap))
+    return imageTensor.buffer
+  }
+
   fun processBoundingBox(boundingBox: Rect): MutableMap<String, Any> {
     val bounds: MutableMap<String, Any> = HashMap()
     // Calculate offset (we need to center the overlay on the target)

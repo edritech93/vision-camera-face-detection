@@ -31,7 +31,11 @@ const VisionCameraFaceDetectionModule =
         }
       );
 
-export function detectFromBase64(imageString: string): Promise<string> {
+export function initTensor(modelPath: string, count?: number): Promise<string> {
+  return VisionCameraFaceDetectionModule.initTensor(modelPath, count);
+}
+
+export function detectFromBase64(imageString: string): Promise<any> {
   return VisionCameraFaceDetectionModule.detectFromBase64(imageString);
 }
 

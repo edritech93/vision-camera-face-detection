@@ -28,21 +28,33 @@ class VisionCameraFaceDetectionModule: NSObject {
         }
         let image = VisionImage(image: uiImage)
         image.orientation = .up
-        weak var weakSelf = self
-        VisionCameraFaceDetectionModule.faceDetector.process(image) { faces, error in
-            guard weakSelf != nil else {
-                print("Self is nil!")
-                return
+        do {
+            let faces: [Face] =  try VisionCameraFaceDetectionPlugin.faceDetector.results(in: image)
+            if (!faces.isEmpty){
+                let face = faces.first
+                let faceFrame = face!.frame
+                guard let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage, rectImage: faceFrame) else {
+                    reject("imageCrop can't created", nil, nil)
+                    return
+                }
+                guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
+                    reject("Failed to get pixelBuffer", nil, nil)
+                    return
+                }
+                guard let rgbData = FaceHelper.rgbDataFromBuffer(
+                    pixelBuffer,
+                    byteCount: batchSize * inputWidth * inputHeight * inputChannels,
+                    isModelQuantized: false
+                ) else {
+                    reject("Failed to convert the image buffer to RGB data.", nil, nil)
+                    return
+                }
+                var map: [String: Any] = [:]
+                map["data"] = rgbData.self
+                resolve(map)
             }
-            guard error == nil, let faces = faces, !faces.isEmpty else {
-                print("Faces is empty")
-                resolve("")
-                return
-            }
-            let face = faces.first
-            let faceFrame = face!.frame
-            let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage, rectImage: faceFrame)
-            resolve(FaceHelper.convertImageToBase64(image:imageCrop!))
+        } catch {
+            reject("error: ", nil, error)
         }
     }
 }
