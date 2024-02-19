@@ -4,6 +4,7 @@ import MLKitVision
 import CoreML
 import UIKit
 import AVFoundation
+import TensorFlowLite
 
 @objc(VisionCameraFaceDetectionModule)
 class VisionCameraFaceDetectionModule: NSObject {
@@ -15,6 +16,29 @@ class VisionCameraFaceDetectionModule: NSObject {
     }()
     
     static var faceDetector = FaceDetector.faceDetector(options: FaceDetectorOption)
+
+    @objc(initTensor:withCount:withResolver:withRejecter:)
+    func initTensor(modelName: String, count: Int = 1, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        // Construct the path to the model file.
+        guard let modelPath = Bundle.main.path(
+            forResource: modelName,
+            ofType: "tflite"
+        ) else {
+            print("Failed to load the model file with name: \(modelName).")
+            return
+        }
+        do {
+            var options = Interpreter.Options()
+            options.threadCount = count
+            interpreter = try Interpreter(modelPath: modelPath, options: options)
+            try interpreter?.allocateTensors()
+            resolve("initialization tflite success")
+        } catch let error {
+            print("Failed to create the interpreter with error: \(error.localizedDescription)")
+            reject("Error", "tflite error", error)
+            return
+        }
+    }
     
     @objc(detectFromBase64:withResolver:withRejecter:)
     func detectFromBase64(imageString: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
@@ -29,6 +53,7 @@ class VisionCameraFaceDetectionModule: NSObject {
         let image = VisionImage(image: uiImage)
         image.orientation = .up
         do {
+            var map: [String: Any] = [:]
             let faces: [Face] =  try VisionCameraFaceDetectionPlugin.faceDetector.results(in: image)
             if (!faces.isEmpty){
                 let face = faces.first
@@ -49,8 +74,12 @@ class VisionCameraFaceDetectionModule: NSObject {
                     reject("Failed to convert the image buffer to RGB data.", nil, nil)
                     return
                 }
-                var map: [String: Any] = [:]
+                map["message"] = "Successfully Get Face"
                 map["data"] = rgbData.self
+                resolve(map)
+            } else {
+                map["message"] = "No Face"
+                map["data"] = []
                 resolve(map)
             }
         } catch {

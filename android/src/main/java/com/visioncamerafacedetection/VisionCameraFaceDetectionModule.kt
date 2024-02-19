@@ -7,10 +7,13 @@ import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.RectF
 import android.util.Base64
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.WritableNativeMap
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
@@ -22,6 +25,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+
 
 class VisionCameraFaceDetectionModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
@@ -69,6 +73,7 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
       val image = InputImage.fromBitmap(bmpStorageResult, 0)
       val task = faceDetector.process(image)
       val faces = Tasks.await(task)
+      val map: WritableMap = WritableNativeMap()
       if (faces.size > 0) {
         val face = faces[0]
         val bmpFaceStorage =
@@ -84,11 +89,17 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
         val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceStorage)
         val output: FloatBuffer = FloatBuffer.allocate(192)
         interpreter?.run(input, output)
-        val map: MutableMap<String, Any> = HashMap()
-        map["data"] = output.array()
+        val arrayData = Arguments.createArray()
+        for (i: Float in output.array()) {
+          arrayData.pushDouble(i.toDouble())
+        }
+        map.putString("message", "Successfully Get Face")
+        map.putArray("data", arrayData)
         promise.resolve(map)
       } else {
-        promise.resolve(null)
+        map.putString("message", "No Face")
+        map.putArray("data", Arguments.createArray())
+        promise.resolve(map)
       }
     } catch (e: Exception) {
       e.printStackTrace()

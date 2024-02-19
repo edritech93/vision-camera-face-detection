@@ -1181,6 +1181,13 @@ PODS:
     - React-Core
     - ReactCommon/turbomodule/core
   - SocketRocket (0.6.1)
+  - TensorFlowLiteC (2.11.0):
+    - TensorFlowLiteC/Core (= 2.11.0)
+  - TensorFlowLiteC/Core (2.11.0)
+  - TensorFlowLiteSwift (2.11.0):
+    - TensorFlowLiteSwift/Core (= 2.11.0)
+  - TensorFlowLiteSwift/Core (2.11.0):
+    - TensorFlowLiteC (= 2.11.0)
   - VisionCamera (3.8.2):
     - React
     - React-callinvoker
@@ -1191,6 +1198,7 @@ PODS:
     - GoogleMLKit/FaceDetection
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
+    - TensorFlowLiteSwift (= 2.11.0)
     - VisionCamera
   - Yoga (1.14.0)
 
@@ -1302,6 +1310,8 @@ SPEC REPOS:
     - OpenSSL-Universal
     - PromisesObjC
     - SocketRocket
+    - TensorFlowLiteC
+    - TensorFlowLiteSwift
 
 EXTERNAL SOURCES:
   boost:
@@ -1491,8 +1501,10 @@ SPEC CHECKSUMS:
   RNPermissions: f18c61c418a3f6e7ed79d2ad145551685e3b614a
   RNReanimated: 7d6d32f238f914f13d9d6fb45c0aef557f7f901e
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
+  TensorFlowLiteC: 8a8cb6fa20ad74dff29b5e490d02c36a14d48148
+  TensorFlowLiteSwift: 1a5cd776a377f8d7a009b16f5904fdf91a8debfa
   VisionCamera: edbcd00e27a438b2228f67823e2b8d15a189065f
-  VisionCameraFaceDetection: 1c82c6d75860968a04904fac78d0484bd350fc24
+  VisionCameraFaceDetection: fb10f8886df42d6b82a9d1592d575dc1ac1b7126
   Yoga: 1b901a6d6eeba4e8a2e8f308f708691cdb5db312
 
 PODFILE CHECKSUM: 7dfc7b7efef986a8d772e268ac1ee07a249eb651

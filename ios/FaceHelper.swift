@@ -5,11 +5,15 @@ import CoreML
 import UIKit
 import AVFoundation
 import Accelerate
+import TensorFlowLite
 
 let batchSize = 1
 let inputChannels = 1
 let inputWidth = 112
 let inputHeight = 112
+
+// TensorFlow Lite `Interpreter` object for performing inference on a given model.
+var interpreter: Interpreter? = nil
 
 class FaceHelper {
     static func processContours(from face: Face) -> [String:[[String:CGFloat]]] {
@@ -166,7 +170,6 @@ class FaceHelper {
         for i in 0..<bytes.count {
             floats.append(Float(bytes[i]) / 255.0)
         }
-        print("floats: \(floats)");
         return Data(copyingBufferOf: floats)
     }
     
