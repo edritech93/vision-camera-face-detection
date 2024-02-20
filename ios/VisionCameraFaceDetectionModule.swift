@@ -74,9 +74,22 @@ class VisionCameraFaceDetectionModule: NSObject {
                     reject("Failed to convert the image buffer to RGB data.", nil, nil)
                     return
                 }
-                map["message"] = "Successfully Get Face"
-                map["data"] = rgbData.self
-                resolve(map)
+                // Copy the RGB data to the input `Tensor`.
+                try interpreter?.copy(rgbData, toInputAt: 0)
+                // Run inference by invoking the `Interpreter`.
+                try interpreter?.invoke()
+                // Get the output `Tensor` to process the inference results.
+                let outputTensor: Tensor? = try interpreter?.output(at: 0)
+                if ((outputTensor?.data) != nil) {
+                    let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
+                    map["message"] = "Successfully Get Face"
+                    map["data"] = result
+                    resolve(map)
+                } else {
+                    map["message"] = "No Face"
+                    map["data"] = []
+                    resolve(map)
+                }
             } else {
                 map["message"] = "No Face"
                 map["data"] = []
