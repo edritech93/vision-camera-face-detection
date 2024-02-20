@@ -13,6 +13,7 @@ import {
   type FaceBoundType,
   type FaceType,
   detectFromBase64,
+  initTensor,
 } from 'vision-camera-face-detection';
 import Animated, {
   useSharedValue as useSharedValueR,
@@ -104,6 +105,12 @@ export default function App() {
       setHasPermission(status === 'granted');
     }
     _getPermission();
+  }, []);
+
+  useEffect(() => {
+    initTensor('mobile_face_net', 1)
+      .then((response) => console.log(response))
+      .catch((error) => console.log(error));
   }, []);
 
   const onError = useCallback((error: CameraRuntimeError) => {
