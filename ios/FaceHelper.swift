@@ -196,6 +196,28 @@ class FaceHelper {
         CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
         return pixelBuffer
     }
+    
+    static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer?, rectImage: CGRect) -> UIImage? {
+        guard let sampleBuffer = sampleBuffer else {
+            print("Sample buffer is NULL.")
+            return nil
+        }
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            print("Invalid sample buffer.")
+            return nil
+        }
+        let ciimage = CIImage(cvPixelBuffer: imageBuffer)
+        let context = CIContext(options: nil)
+        let cgImage = context.createCGImage(ciimage, from: ciimage.extent)!
+        
+        if (!rectImage.isNull) {
+            let imageRef: CGImage = cgImage.cropping(to: rectImage)!
+            let imageCrop: UIImage = UIImage(cgImage: imageRef, scale: 0.5, orientation: .up)
+            return imageCrop
+        } else {
+            return nil
+        }
+    }
 }
 
 // MARK: - Extensions

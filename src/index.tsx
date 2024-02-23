@@ -48,6 +48,7 @@ export type FaceType = {
   smilingProbability: number;
   bounds: FaceBoundType;
   contours: FaceContourType;
+  data: number[];
 };
 
 export type FaceBoundType = {
