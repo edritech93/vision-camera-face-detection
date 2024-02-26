@@ -77,11 +77,11 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
       if (faces.size > 0) {
         val face = faces[0]
         val bmpFaceStorage =
-          Bitmap.createBitmap(112, 112, Bitmap.Config.ARGB_8888)
+          Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Bitmap.Config.ARGB_8888)
         val faceBB = RectF(face.boundingBox)
         val cvFace = Canvas(bmpFaceStorage)
-        val sx = 112 / faceBB.width()
-        val sy = 112 / faceBB.height()
+        val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()
+        val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
         val matrix = Matrix()
         matrix.postTranslate(-faceBB.left, -faceBB.top)
         matrix.postScale(sx, sy)

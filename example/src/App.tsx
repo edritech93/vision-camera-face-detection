@@ -66,9 +66,9 @@ export default function App() {
   const frameProcessor = useFrameProcessor((frame: Frame) => {
     'worklet';
     const dataFace: FaceType = scanFaces(frame);
-    // console.log('dataFace => ', dataFace);
     // NOTE: handle face detection
     if (dataFace && dataFace.bounds) {
+      console.log('dataFace => ', dataFace);
       const { width: frameWidth, height: frameHeight } = frame;
       const xFactor = SCREEN_WIDTH / frameWidth;
       const yFactor = SCREEN_HEIGHT / frameHeight;

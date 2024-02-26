@@ -15,11 +15,12 @@ import java.nio.ByteBuffer
 import kotlin.math.ceil
 
 var interpreter: Interpreter? = null
+const val TF_OD_API_INPUT_SIZE = 112
 
 class FaceHelper {
 
   private val imageTensorProcessor: ImageProcessor = ImageProcessor.Builder()
-    .add(ResizeOp(112, 112, ResizeOp.ResizeMethod.BILINEAR))
+    .add(ResizeOp(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, ResizeOp.ResizeMethod.BILINEAR))
     .add(NormalizeOp(127.5f, 127.5f))
     .build()
 
