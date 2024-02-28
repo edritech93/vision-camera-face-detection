@@ -7,6 +7,7 @@ import {
   CameraRuntimeError,
   useCameraFormat,
   useCameraDevice,
+  runAtTargetFps,
 } from 'react-native-vision-camera';
 import {
   scanFaces,
@@ -65,25 +66,28 @@ export default function App() {
 
   const frameProcessor = useFrameProcessor((frame: Frame) => {
     'worklet';
-    const dataFace: FaceType = scanFaces(frame);
-    // NOTE: handle face detection
-    if (dataFace && dataFace.bounds) {
-      console.log('dataFace => ', dataFace);
-      const { width: frameWidth, height: frameHeight } = frame;
-      const xFactor = SCREEN_WIDTH / frameWidth;
-      const yFactor = SCREEN_HEIGHT / frameHeight;
-      const bounds: FaceBoundType = dataFace.bounds;
-      rectWidth.value = bounds.width * xFactor;
-      rectHeight.value = bounds.height * yFactor;
-      rectX.value = bounds.x * xFactor;
-      rectY.value = bounds.y * yFactor;
-      updateRect({
-        width: rectWidth.value,
-        height: rectHeight.value,
-        x: rectX.value,
-        y: rectY.value,
-      });
-    }
+    runAtTargetFps(1, () => {
+      const dataFace: FaceType = scanFaces(frame);
+      // NOTE: handle face detection
+      if (dataFace && dataFace.bounds) {
+        // console.log('dataFace => ', dataFace);
+        const { width: frameWidth, height: frameHeight } = frame;
+        const xFactor = SCREEN_WIDTH / frameWidth;
+        const yFactor = SCREEN_HEIGHT / frameHeight;
+        const bounds: FaceBoundType = dataFace.bounds;
+        rectWidth.value = bounds.width * xFactor;
+        rectHeight.value = bounds.height * yFactor;
+        rectX.value = bounds.x * xFactor;
+        rectY.value = bounds.y * yFactor;
+        updateRect({
+          width: rectWidth.value,
+          height: rectHeight.value,
+          x: rectX.value,
+          y: rectY.value,
+        });
+        console.log('GET DATA ', new Date().toTimeString());
+      }
+    });
   }, []);
 
   const faceAnimStyle = useAnimatedStyle(() => {
