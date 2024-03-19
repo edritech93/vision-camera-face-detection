@@ -84,15 +84,18 @@ class VisionCameraFaceDetectionModule: NSObject {
                     let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
                     map["message"] = "Successfully Get Face"
                     map["data"] = result
+                    map["base64"] = FaceHelper.convertImageToBase64(image: imageCrop)
                     resolve(map)
                 } else {
                     map["message"] = "No Face"
                     map["data"] = []
+                    map["base64"] = ""
                     resolve(map)
                 }
             } else {
                 map["message"] = "No Face"
                 map["data"] = []
+                map["base64"] = ""
                 resolve(map)
             }
         } catch {
