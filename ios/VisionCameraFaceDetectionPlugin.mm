@@ -1,8 +1,13 @@
-#if __has_include(<VisionCamera/FrameProcessorPlugin.h>)
 #import <VisionCamera/FrameProcessorPlugin.h>
 #import <VisionCamera/FrameProcessorPluginRegistry.h>
 
+#if __has_include("VisionCameraFaceDetection/VisionCameraFaceDetection-Swift.h")
+#import "VisionCameraFaceDetection/VisionCameraFaceDetection-Swift.h"
+#else
 #import "VisionCameraFaceDetection-Swift.h"
+#endif
+
+// VISION_EXPORT_SWIFT_FRAME_PROCESSOR(VisionCameraFaceDetectionPlugin, scanFace)
 
 @interface VisionCameraFaceDetectionPlugin (FrameProcessorPluginLoader)
 @end
@@ -19,5 +24,3 @@
 }
 
 @end
-
-#endif
