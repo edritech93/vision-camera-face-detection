@@ -1,19 +1,17 @@
 package com.visioncamerafacedetection
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.RectF
-import android.os.Build
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.common.internal.ImageConvertUtils
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.mrousavy.camera.frameprocessor.Frame
-import com.mrousavy.camera.frameprocessor.FrameProcessorPlugin
-import com.mrousavy.camera.frameprocessor.VisionCameraProxy
+import com.mrousavy.camera.frameprocessors.Frame
+import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
+import com.mrousavy.camera.frameprocessors.VisionCameraProxy
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
@@ -32,7 +30,7 @@ class VisionCameraFaceDetectionPlugin(proxy: VisionCameraProxy, options: Map<Str
   override fun callback(frame: Frame, params: Map<String, Any>?): Any? {
     try {
       val mediaImage = frame.image
-      val image = InputImage.fromMediaImage(mediaImage, frame.orientation.toDegrees())
+      val image = InputImage.fromMediaImage(mediaImage, frame.orientation.toSurfaceRotation())
       val task = faceDetector.process(image)
       val faces = Tasks.await(task)
       if (faces.size > 0) {
