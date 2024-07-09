@@ -1,77 +1,341 @@
 import VisionCamera
+import Foundation
 import MLKitFaceDetection
 import MLKitVision
 import CoreML
 import UIKit
 import AVFoundation
+import SceneKit
 import TensorFlowLite
 
 @objc(VisionCameraFaceDetectionPlugin)
 public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
-    public override init(proxy: VisionCameraProxyHolder, options: [AnyHashable: Any]! = [:]) {
-        super.init(proxy: proxy, options: options)
+  // device display data  
+  private let screenBounds = UIScreen.main.bounds
+
+  // detection props
+  private var autoScale = false
+  private var faceDetector: FaceDetector! = nil
+  private var runLandmarks = false
+  private var runClassifications = false
+  private var runContours = false
+  private var trackingEnabled = false
+
+  public override init(
+    proxy: VisionCameraProxyHolder, 
+    options: [AnyHashable : Any]! = [:]
+  ) {
+    super.init(proxy: proxy, options: options)
+    let config = getConfig(withArguments: options)
+
+    // handle auto scaling
+    autoScale = config?["autoScale"] as? Bool == true
+
+    // initializes faceDetector on creation
+    let minFaceSize = 0.15
+    let optionsBuilder = FaceDetectorOptions()
+        optionsBuilder.performanceMode = .fast
+        optionsBuilder.landmarkMode = .none
+        optionsBuilder.contourMode = .none
+        optionsBuilder.classificationMode = .none
+        optionsBuilder.minFaceSize = minFaceSize
+        optionsBuilder.isTrackingEnabled = false
+
+    if config?["performanceMode"] as? String == "accurate" {
+      optionsBuilder.performanceMode = .accurate
     }
+
+    if config?["landmarkMode"] as? String == "all" {
+      runLandmarks = true
+      optionsBuilder.landmarkMode = .all
+    }
+
+    if config?["classificationMode"] as? String == "all" {
+      runClassifications = true
+      optionsBuilder.classificationMode = .all
+    }
+
+    if config?["contourMode"] as? String == "all" {
+      runContours = true
+      optionsBuilder.contourMode = .all
+    }
+
+    let minFaceSizeParam = config?["minFaceSize"] as? Double
+    if minFaceSizeParam != nil && minFaceSizeParam != minFaceSize {
+      optionsBuilder.minFaceSize = CGFloat(minFaceSizeParam!)
+    }
+
+    if config?["trackingEnabled"] as? Bool == true {
+      trackingEnabled = true
+      optionsBuilder.isTrackingEnabled = true
+    }
+
+    faceDetector = FaceDetector.faceDetector(options: optionsBuilder)
+  }
+
+  func getConfig(
+    withArguments arguments: [AnyHashable: Any]!
+  ) -> [String:Any]! {
+    if arguments.count > 0 {
+      let config = arguments.map { dictionary in
+        Dictionary(uniqueKeysWithValues: dictionary.map { (key, value) in
+          (key as? String ?? "", value)
+        })
+      }
+
+      return config
+    }
+
+    return nil
+  }
+
+  func processBoundingBox(
+    from face: Face,
+    sourceWidth: CGFloat,
+    sourceHeight: CGFloat,
+    orientation: UIImage.Orientation,
+    scaleX: CGFloat,
+    scaleY: CGFloat
+  ) -> [String:Any] {
+    let boundingBox = face.frame
+    let width = boundingBox.width * scaleX
+    let height = boundingBox.height * scaleY
+    let x = boundingBox.origin.y * scaleX
+    let y = boundingBox.origin.x * scaleY
     
-    static var FaceDetectorOption: FaceDetectorOptions = {
-        let option = FaceDetectorOptions()
-        option.contourMode = .none
-        option.classificationMode = .all
-        option.landmarkMode = .none
-        option.performanceMode = .fast // doesn't work in fast mode!, why?
-        return option
-    }()
+    return [
+      "width": width,
+      "height": height,
+      "x": (-x + sourceWidth * scaleX) - width,
+      "y": y
+    ]
+  }
+
+  func processLandmarks(
+    from face: Face,
+    scaleX: CGFloat,
+    scaleY: CGFloat
+  ) -> [String:[String: CGFloat?]] {
+    let faceLandmarkTypes = [
+      FaceLandmarkType.leftCheek,
+      FaceLandmarkType.leftEar,
+      FaceLandmarkType.leftEye,
+      FaceLandmarkType.mouthBottom,
+      FaceLandmarkType.mouthLeft,
+      FaceLandmarkType.mouthRight,
+      FaceLandmarkType.noseBase,
+      FaceLandmarkType.rightCheek,
+      FaceLandmarkType.rightEar,
+      FaceLandmarkType.rightEye
+    ]
+
+    let faceLandmarksTypesStrings = [
+      "LEFT_CHEEK",
+      "LEFT_EAR",
+      "LEFT_EYE",
+      "MOUTH_BOTTOM",
+      "MOUTH_LEFT",
+      "MOUTH_RIGHT",
+      "NOSE_BASE",
+      "RIGHT_CHEEK",
+      "RIGHT_EAR",
+      "RIGHT_EYE"
+    ];
+
+    var faceLandMarksTypesMap: [String: [String: CGFloat?]] = [:]
+    for i in 0..<faceLandmarkTypes.count {
+      let landmark = face.landmark(ofType: faceLandmarkTypes[i]);
+      let position = [
+        "x": landmark?.position.x ?? 0.0 * scaleX,
+        "y": landmark?.position.y ?? 0.0 * scaleY
+      ]
+      faceLandMarksTypesMap[faceLandmarksTypesStrings[i]] = position
+    }
+
+    return faceLandMarksTypesMap
+  }
+
+  func processFaceContours(
+    from face: Face,
+    scaleX: CGFloat,
+    scaleY: CGFloat
+  ) -> [String:[[String:CGFloat]]] {
+    let faceContoursTypes = [
+      FaceContourType.face,
+      FaceContourType.leftCheek,
+      FaceContourType.leftEye,
+      FaceContourType.leftEyebrowBottom,
+      FaceContourType.leftEyebrowTop,
+      FaceContourType.lowerLipBottom,
+      FaceContourType.lowerLipTop,
+      FaceContourType.noseBottom,
+      FaceContourType.noseBridge,
+      FaceContourType.rightCheek,
+      FaceContourType.rightEye,
+      FaceContourType.rightEyebrowBottom,
+      FaceContourType.rightEyebrowTop,
+      FaceContourType.upperLipBottom,
+      FaceContourType.upperLipTop
+    ]
+
+    let faceContoursTypesStrings = [
+      "FACE",
+      "LEFT_CHEEK",
+      "LEFT_EYE",
+      "LEFT_EYEBROW_BOTTOM",
+      "LEFT_EYEBROW_TOP",
+      "LOWER_LIP_BOTTOM",
+      "LOWER_LIP_TOP",
+      "NOSE_BOTTOM",
+      "NOSE_BRIDGE",
+      "RIGHT_CHEEK",
+      "RIGHT_EYE",
+      "RIGHT_EYEBROW_BOTTOM",
+      "RIGHT_EYEBROW_TOP",
+      "UPPER_LIP_BOTTOM",
+      "UPPER_LIP_TOP"
+    ];
+
+    var faceContoursTypesMap: [String:[[String:CGFloat]]] = [:]
+    for i in 0..<faceContoursTypes.count {
+      let contour = face.contour(ofType: faceContoursTypes[i]);
+      var pointsArray: [[String:CGFloat]] = []
+
+      if let points = contour?.points {
+        for point in points {
+          let currentPointsMap = [
+            "x": point.x * scaleX,
+            "y": point.y * scaleY,
+          ]
+
+          pointsArray.append(currentPointsMap)
+        }
+
+        faceContoursTypesMap[faceContoursTypesStrings[i]] = pointsArray
+      }
+    }
+
+    return faceContoursTypesMap
+  }
+
+  func getOrientation(
+    orientation: UIImage.Orientation
+  ) -> UIImage.Orientation {
+    switch orientation {
+      case .up:
+        // device is landscape left
+        return .up
+      case .left:
+      // device is portrait
+        return .right
+      case .down:
+        // device is landscape right
+        return .down
+      case .right:
+        // device is upside-down
+        return .left
+      default:
+        return .up
+    }
+  }
+  
+  public override func callback(
+    _ frame: Frame, 
+    withArguments arguments: [AnyHashable: Any]?
+  ) -> Any {
+    var result: [Any] = []
+
+    do {
+      // we need to invert sizes as frame is always -90deg rotated
+      let width = CGFloat(frame.height)
+      let height = CGFloat(frame.width)
+      let orientation = getOrientation(
+        orientation: frame.orientation
+      )
+      let image = VisionImage(buffer: frame.buffer)
+      image.orientation = orientation
     
-    static var faceDetector = FaceDetector.faceDetector(options: FaceDetectorOption)
-    
-    
-    
-    @objc override public func callback(_ frame: Frame, withArguments arguments: [AnyHashable : Any]?) -> Any? {
-        let image = VisionImage(buffer: frame.buffer)
-        image.orientation = .up
-        do {
-            let faces: [Face] =  try VisionCameraFaceDetectionPlugin.faceDetector.results(in: image)
-            if (!faces.isEmpty){
-                guard let face = faces.first else {
-                    return nil
-                }
-                guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame) else {
-                    return nil
-                }
-                guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
-                    return nil
-                }
-                guard let rgbData = FaceHelper.rgbDataFromBuffer(
-                    pixelBuffer,
-                    byteCount: batchSize * inputWidth * inputHeight * inputChannels,
-                    isModelQuantized: false
-                ) else {
-                    return nil
-                }
-                try interpreter?.copy(rgbData, toInputAt: 0)
-                try interpreter?.invoke()
-                let outputTensor: Tensor? = try interpreter?.output(at: 0)
-                var map: [String: Any] = [:]
-                if ((outputTensor?.data) != nil) {
-                    let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
-                    map["data"] = result
-                } else {
-                    map["data"] = []
-                }
-                map["rollAngle"] = face.headEulerAngleZ  // Head is tilted sideways rotZ degrees
-                map["pitchAngle"] = face.headEulerAngleX  // Head is rotated to the uptoward rotX degrees
-                map["yawAngle"] = face.headEulerAngleY   // Head is rotated to the right rotY degrees
-                map["leftEyeOpenProbability"] = face.leftEyeOpenProbability
-                map["rightEyeOpenProbability"] = face.rightEyeOpenProbability
-                map["smilingProbability"] = face.smilingProbability
-                map["bounds"] = FaceHelper.processBoundingBox(from: face)
-                map["contours"] = FaceHelper.processContours(from: face)
-                return map
-            } else {
-                return nil
-            }
-        } catch {
-            print("error: \(error)")
+      var scaleX:CGFloat
+      var scaleY:CGFloat
+      if autoScale {
+        scaleX = screenBounds.size.width / width
+        scaleY = screenBounds.size.height / height
+      } else {
+        scaleX = CGFloat(1)
+        scaleY = CGFloat(1)
+      }
+
+      let faces: [Face] = try faceDetector!.results(in: image)
+      for face in faces {
+        guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame) else {
             return nil
         }
+        guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
+            return nil
+        }
+        guard let rgbData = FaceHelper.rgbDataFromBuffer(
+            pixelBuffer,
+            byteCount: batchSize * inputWidth * inputHeight * inputChannels,
+            isModelQuantized: false
+        ) else {
+            return nil
+        }
+        try interpreter?.copy(rgbData, toInputAt: 0)
+        try interpreter?.invoke()
+        let outputTensor: Tensor? = try interpreter?.output(at: 0)
+
+        var map: [String: Any] = [:]
+        if ((outputTensor?.data) != nil) {
+            let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
+            map["data"] = result
+        } else {
+            map["data"] = []
+        }
+
+        if runLandmarks {
+          map["landmarks"] = processLandmarks(
+            from: face,
+            scaleX: scaleX,
+            scaleY: scaleY
+          )
+        }
+
+        if runClassifications {
+          map["leftEyeOpenProbability"] = face.leftEyeOpenProbability
+          map["rightEyeOpenProbability"] = face.rightEyeOpenProbability
+          map["smilingProbability"] = face.smilingProbability
+        }
+
+        if runContours {
+          map["contours"] = processFaceContours(
+            from: face,
+            scaleX: scaleX,
+            scaleY: scaleY
+          )
+        }
+
+        if trackingEnabled {
+          map["trackingId"] = face.trackingID
+        }
+
+        map["rollAngle"] = face.headEulerAngleZ
+        map["pitchAngle"] = face.headEulerAngleX
+        map["yawAngle"] = face.headEulerAngleY
+        map["bounds"] = processBoundingBox(
+          from: face,
+          sourceWidth: width,
+          sourceHeight: height,
+          orientation: frame.orientation,
+          scaleX: scaleX,
+          scaleY: scaleY
+        )
+
+        result.append(map)
+      }
+    } catch let error {
+      print("Error processing face detection: \(error)")
     }
+
+    return result
+  }
 }

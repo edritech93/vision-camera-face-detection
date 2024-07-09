@@ -1,6 +1,6 @@
 # vision-camera-face-detection
 
-Plugin Face Detection for Vision Camera 3
+Plugin Face Detection for Vision Camera 4
 
 ## Installation
 
@@ -10,6 +10,7 @@ npm install vision-camera-face-detection
 
 ## Usage
 
+
 ```js
 import { multiply } from 'vision-camera-face-detection';
 
@@ -17,6 +18,7 @@ import { multiply } from 'vision-camera-face-detection';
 
 const result = await multiply(3, 7);
 ```
+
 
 ## Contributing
 
