@@ -54,7 +54,7 @@ class VisionCameraFaceDetectionModule: NSObject {
         image.orientation = .up
         do {
             var map: [String: Any] = [:]
-            let faces: [Face] =  try VisionCameraFaceDetectionPlugin.faceDetector.results(in: image)
+            let faces: [Face] =  try VisionCameraFaceDetectionModule.faceDetector.results(in: image)
             if (!faces.isEmpty){
                 let face = faces.first
                 let faceFrame = face!.frame
