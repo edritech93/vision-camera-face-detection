@@ -6,9 +6,9 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-const VisionCameraFaceDetectorModule =
-  NativeModules.VisionCameraFaceDetectorModule
-    ? NativeModules.VisionCameraFaceDetectorModule
+const VisionCameraFaceDetectionModule =
+  NativeModules.VisionCameraFaceDetectionModule
+    ? NativeModules.VisionCameraFaceDetectionModule
     : new Proxy(
         {},
         {
@@ -19,9 +19,9 @@ const VisionCameraFaceDetectorModule =
       );
 
 export function initTensor(modelPath: string, count?: number): Promise<string> {
-  return VisionCameraFaceDetectorModule.initTensor(modelPath, count);
+  return VisionCameraFaceDetectionModule.initTensor(modelPath, count);
 }
 
 export function detectFromBase64(imageString: string): Promise<any> {
-  return VisionCameraFaceDetectorModule.detectFromBase64(imageString);
+  return VisionCameraFaceDetectionModule.detectFromBase64(imageString);
 }
