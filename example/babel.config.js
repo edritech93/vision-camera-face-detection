@@ -4,8 +4,6 @@ const pak = require('../package.json');
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
-    ['react-native-reanimated/plugin'],
-    ['react-native-worklets-core/plugin'],
     [
       'module-resolver',
       {
@@ -15,5 +13,7 @@ module.exports = {
         },
       },
     ],
+    ['react-native-reanimated/plugin'],
+    ['react-native-worklets-core/plugin'],
   ],
 };

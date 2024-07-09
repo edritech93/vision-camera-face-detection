@@ -1,5 +1,7 @@
+#import <Foundation/Foundation.h>
 #import <VisionCamera/FrameProcessorPlugin.h>
 #import <VisionCamera/FrameProcessorPluginRegistry.h>
+#import <VisionCamera/Frame.h>
 
 #if __has_include("VisionCameraFaceDetection/VisionCameraFaceDetection-Swift.h")
 #import "VisionCameraFaceDetection/VisionCameraFaceDetection-Swift.h"
@@ -7,20 +9,14 @@
 #import "VisionCameraFaceDetection-Swift.h"
 #endif
 
-// VISION_EXPORT_SWIFT_FRAME_PROCESSOR(VisionCameraFaceDetectionPlugin, scanFace)
-
 @interface VisionCameraFaceDetectionPlugin (FrameProcessorPluginLoader)
 @end
 
 @implementation VisionCameraFaceDetectionPlugin (FrameProcessorPluginLoader)
-
-+ (void)load
-{
-    [FrameProcessorPluginRegistry addFrameProcessorPlugin:@"scanFace"
-                                          withInitializer:^FrameProcessorPlugin* _Nonnull(VisionCameraProxyHolder* _Nonnull proxy,
-                                                                                          NSDictionary* _Nullable options) {
-        return [[VisionCameraFaceDetectionPlugin alloc] initWithProxy:proxy withOptions:options];
-    }];
++ (void) load {
+  [FrameProcessorPluginRegistry addFrameProcessorPlugin:@"detectFaces"
+    withInitializer:^FrameProcessorPlugin*(VisionCameraProxyHolder* proxy, NSDictionary* options) {
+    return [[VisionCameraFaceDetectionPlugin alloc] initWithProxy:proxy withOptions:options];
+  }];
 }
-
 @end

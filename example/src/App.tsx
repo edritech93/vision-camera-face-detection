@@ -1,209 +1,231 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Button, Dimensions, SafeAreaView, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, Button, View } from 'react-native';
 import {
-  Camera,
-  useFrameProcessor,
   type Frame,
-  CameraRuntimeError,
-  useCameraFormat,
+  Camera as VisionCamera,
   useCameraDevice,
-  runAtTargetFps,
+  useCameraPermission,
 } from 'react-native-vision-camera';
 import {
-  scanFaces,
-  type FaceBoundType,
-  type FaceType,
-  detectFromBase64,
+  Camera,
+  type Face,
+  type FaceDetectionOptions,
   initTensor,
 } from 'vision-camera-face-detection';
 import Animated, {
-  useSharedValue as useSharedValueR,
   useAnimatedStyle,
-  withSpring,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
-import { Worklets, useSharedValue } from 'react-native-worklets-core';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { getPermissionReadStorage } from './permission';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const screenAspectRatio = SCREEN_HEIGHT / SCREEN_WIDTH;
-const enableHdr = false;
-const enableNightMode = false;
-const targetFps = 30;
 
 export default function App() {
-  const [hasPermission, setHasPermission] = useState<boolean>(false);
-
-  const camera = useRef<Camera>(null);
-  const device = useCameraDevice('front', {
-    physicalDevices: [
-      'ultra-wide-angle-camera',
-      'wide-angle-camera',
-      'telephoto-camera',
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const [cameraMounted, setCameraMounted] = useState<boolean>(false);
+  const [cameraPaused, setCameraPaused] = useState<boolean>(false);
+  const [autoScale, setAutoScale] = useState<boolean>(true);
+  const [facingFront, setFacingFront] = useState<boolean>(true);
+  const faceDetectionOptions = useRef<FaceDetectionOptions>({
+    performanceMode: 'fast',
+    classificationMode: 'all',
+  }).current;
+  const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
+  //
+  // vision camera ref
+  //
+  const camera = useRef<VisionCamera>(null);
+  //
+  // face rectangle position
+  //
+  const aFaceW = useSharedValue(0);
+  const aFaceH = useSharedValue(0);
+  const aFaceX = useSharedValue(0);
+  const aFaceY = useSharedValue(0);
+  const aRot = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    borderWidth: 4,
+    borderLeftColor: 'rgb(0,255,0)',
+    borderRightColor: 'rgb(0,255,0)',
+    borderBottomColor: 'rgb(0,255,0)',
+    borderTopColor: 'rgb(255,0,0)',
+    width: withTiming(aFaceW.value, {
+      duration: 100,
+    }),
+    height: withTiming(aFaceH.value, {
+      duration: 100,
+    }),
+    left: withTiming(aFaceX.value, {
+      duration: 100,
+    }),
+    top: withTiming(aFaceY.value, {
+      duration: 100,
+    }),
+    transform: [
+      {
+        rotate: `${aRot.value}deg`,
+      },
     ],
-  });
-  const format = useCameraFormat(device, [
-    { fps: targetFps },
-    { photoAspectRatio: screenAspectRatio },
-    { photoResolution: 'max' },
-  ]);
-  const fps = Math.min(format?.maxFps ?? 1, targetFps);
-  const rectWidth = useSharedValue(100); // rect width
-  const rectHeight = useSharedValue(100); // rect height
-  const rectX = useSharedValue(100); // rect x position
-  const rectY = useSharedValue(100); // rect y position
-  const rectWidthR = useSharedValueR(100); // rect width
-  const rectHeightR = useSharedValueR(100); // rect height
-  const rectXR = useSharedValueR(0); // rect x position
-  const rectYR = useSharedValueR(0); // rect y position
-  const updateRect = Worklets.createRunInJsFn((frame: any) => {
-    rectWidthR.value = frame.width;
-    rectHeightR.value = frame.height;
-    rectXR.value = frame.x;
-    rectYR.value = frame.y;
-  });
-
-  const frameProcessor = useFrameProcessor((frame: Frame) => {
-    'worklet';
-    runAtTargetFps(1, () => {
-      const dataFace: FaceType = scanFaces(frame);
-      // NOTE: handle face detection
-      if (dataFace && dataFace.bounds) {
-        // console.log('dataFace => ', dataFace);
-        const { width: frameWidth, height: frameHeight } = frame;
-        const xFactor = SCREEN_WIDTH / frameWidth;
-        const yFactor = SCREEN_HEIGHT / frameHeight;
-        const bounds: FaceBoundType = dataFace.bounds;
-        rectWidth.value = bounds.width * xFactor;
-        rectHeight.value = bounds.height * yFactor;
-        rectX.value = bounds.x * xFactor;
-        rectY.value = bounds.y * yFactor;
-        updateRect({
-          width: rectWidth.value,
-          height: rectHeight.value,
-          x: rectX.value,
-          y: rectY.value,
-        });
-        console.log('GET DATA ', new Date().toTimeString());
-      }
-    });
-  }, []);
-
-  const faceAnimStyle = useAnimatedStyle(() => {
-    return {
-      position: 'absolute',
-      backgroundColor: 'red',
-      width: withSpring(rectWidthR.value),
-      height: withSpring(rectHeightR.value),
-      transform: [
-        { translateX: withSpring(rectXR.value) },
-        { translateY: withSpring(rectYR.value) },
-      ],
-    };
-  });
+  }));
 
   useEffect(() => {
-    async function _getPermission() {
-      const status = await Camera.requestCameraPermission();
-      setHasPermission(status === 'granted');
-    }
-    _getPermission();
-  }, []);
+    if (hasPermission) return;
+    requestPermission();
+  }, [hasPermission, requestPermission]);
 
   useEffect(() => {
     initTensor('mobile_face_net', 1)
-      .then((response) => console.log(response))
-      .catch((error) => console.log(error));
+      .then((response: any) => console.log(response))
+      .catch((error: any) => console.log(error));
   }, []);
 
-  const onError = useCallback((error: CameraRuntimeError) => {
-    console.error(error);
-  }, []);
-
-  const onInitialized = useCallback(() => {
-    console.log('Camera initialized!');
-  }, []);
-
-  const _onOpenImage = async () => {
-    await getPermissionReadStorage().catch((error: Error) => {
-      console.log(error);
-      return;
-    });
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      includeBase64: true,
-    }).catch((error) => {
-      console.log(error);
-      return;
-    });
-    if (
-      result &&
-      result.assets &&
-      result.assets.length > 0 &&
-      result.assets[0]?.uri &&
-      result.assets[0]?.base64
-    ) {
-      const base64Face = await detectFromBase64(result.assets[0].base64).catch(
-        (error: Error) => {
-          console.log(error);
-          return;
-        }
-      );
-      console.log('base64Face => ', base64Face);
-    }
-  };
-
-  if (device != null && format != null && hasPermission) {
-    const pixelFormat = format.pixelFormats.includes('yuv') ? 'yuv' : 'native';
-    return (
-      <SafeAreaView style={styles.container}>
-        <Camera
-          ref={camera}
-          style={StyleSheet.absoluteFill}
-          device={device}
-          format={format}
-          fps={fps}
-          photoHdr={enableHdr}
-          lowLightBoost={device.supportsLowLightBoost && enableNightMode}
-          isActive={true}
-          onInitialized={onInitialized}
-          onError={onError}
-          enableZoomGesture={false}
-          enableFpsGraph={false}
-          orientation={'portrait'}
-          pixelFormat={pixelFormat}
-          photo={true}
-          video={false}
-          audio={false}
-          frameProcessor={frameProcessor}
-        />
-        <Animated.View style={faceAnimStyle} />
-        <Button title={'Open Photo'} onPress={_onOpenImage} />
-      </SafeAreaView>
-    );
-  } else {
-    return null;
+  /**
+   * Handle camera UI rotation
+   *
+   * @param {number} rotation Camera rotation
+   */
+  function handleUiRotation(rotation: number) {
+    aRot.value = rotation;
   }
+
+  /**
+   * Hanldes camera mount error event
+   *
+   * @param {any} error Error event
+   */
+  function handleCameraMountError(error: any) {
+    console.error('camera mount error', error);
+  }
+
+  /**
+   * Handle detection result
+   *
+   * @param {Face[]} faces Detection result
+   * @returns {void}
+   */
+  function handleFacesDetected(faces: Face[], frame: Frame): void {
+    console.log('faces', faces.length, 'frame', frame.toString(), 'data');
+    if (Object.keys(faces).length <= 0) return;
+    const face = faces[0];
+    if (face) {
+      console.log('data', face.data.length);
+      // if no faces are detected we do nothing
+
+      const { bounds } = face;
+      const { width, height, x, y } = bounds;
+      aFaceW.value = width;
+      aFaceH.value = height;
+      aFaceX.value = x;
+      aFaceY.value = y;
+
+      // only call camera methods if ref is defined
+      if (camera.current) {
+        // take photo, capture video, etc...
+      }
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.wrapCamera}>
+        {hasPermission && cameraDevice ? (
+          <>
+            {cameraMounted && (
+              <>
+                <Camera
+                  ref={camera as any}
+                  style={StyleSheet.absoluteFill}
+                  isActive={true}
+                  device={cameraDevice}
+                  onError={handleCameraMountError}
+                  faceDetectionCallback={handleFacesDetected}
+                  outputOrientation={'device'}
+                  onUIRotationChanged={handleUiRotation}
+                  faceDetectionOptions={{
+                    ...faceDetectionOptions,
+                    autoScale,
+                  }}
+                />
+                <Animated.View style={animatedStyle} />
+                {cameraPaused && (
+                  <Text style={styles.textPaused}>Camera is PAUSED</Text>
+                )}
+              </>
+            )}
+            {!cameraMounted && (
+              <Text style={styles.textNoMounted}>Camera is NOT mounted</Text>
+            )}
+          </>
+        ) : (
+          <Text style={styles.textNoDevice}>
+            No camera device or permission
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.wrapMainBtn}>
+        <View style={styles.wrapBtn}>
+          <Button
+            onPress={() => setFacingFront((current) => !current)}
+            title={'Toggle Cam'}
+          />
+          <Button
+            onPress={() => setAutoScale((current) => !current)}
+            title={`${autoScale ? 'Disable' : 'Enable'} Scale`}
+          />
+        </View>
+        <View style={styles.wrapBtn}>
+          <Button
+            onPress={() => setCameraPaused((current) => !current)}
+            title={`${cameraPaused ? 'Resume' : 'Pause'} Cam`}
+          />
+          <Button
+            onPress={() => setCameraMounted((current) => !current)}
+            title={`${cameraMounted ? 'Unmount' : 'Mount'} Cam`}
+          />
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  textResult: {
-    color: 'black',
-    marginHorizontal: 8,
+  wrapCamera: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  wrapBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
+  textPaused: {
+    width: '100%',
+    backgroundColor: 'rgb(0,0,255)',
+    textAlign: 'center',
+    color: 'white',
   },
-  imgPreview: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
+  textNoMounted: {
+    width: '100%',
+    backgroundColor: 'rgb(255,255,0)',
+    textAlign: 'center',
+  },
+  textNoDevice: {
+    width: '100%',
+    backgroundColor: 'rgb(255,0,0)',
+    textAlign: 'center',
+    color: 'white',
+  },
+  wrapMainBtn: {
     position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    display: 'flex',
+    flexDirection: 'column',
   },
-  btnClose: {},
+  wrapBtn: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
 });

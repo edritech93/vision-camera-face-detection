@@ -13,7 +13,7 @@ RCT_EXTERN_METHOD(initTensor:(NSString)modelName
 
 + (BOOL)requiresMainQueueSetup
 {
-  return NO;
+    return NO;
 }
 
 @end
