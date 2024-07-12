@@ -197,7 +197,7 @@ class FaceHelper {
         return pixelBuffer
     }
     
-    static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer?, rectImage: CGRect) -> UIImage? {
+    static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer?, rectImage: CGRect, orientation: UIImage.Orientation) -> UIImage? {
         guard let sampleBuffer = sampleBuffer else {
             print("Sample buffer is NULL.")
             return nil
@@ -212,7 +212,7 @@ class FaceHelper {
         
         if (!rectImage.isNull) {
             let imageRef: CGImage = cgImage.cropping(to: rectImage)!
-            let imageCrop: UIImage = UIImage(cgImage: imageRef, scale: 0.5, orientation: .up)
+            let imageCrop: UIImage = UIImage(cgImage: imageRef, scale: 0.5, orientation: orientation)
             return imageCrop
         } else {
             return nil

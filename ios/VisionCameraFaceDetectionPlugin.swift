@@ -267,7 +267,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
             
             let faces: [Face] = try faceDetector!.results(in: image)
             for face in faces {
-                guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame) else {
+                guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: orientation) else {
                     return nil
                 }
                 guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
@@ -291,6 +291,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
                 } else {
                     map["data"] = []
                 }
+                map["base64"] = FaceHelper.convertImageToBase64(image: imageCrop)
                 
                 if runLandmarks {
                     map["landmarks"] = processLandmarks(
