@@ -10928,9 +10928,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-vision-camera@npm:4.4.1":
-  version: 4.4.1
-  resolution: "react-native-vision-camera@npm:4.4.1"
+"react-native-vision-camera@npm:4.5.0":
+  version: 4.5.0
+  resolution: "react-native-vision-camera@npm:4.5.0"
   peerDependencies:
     "@shopify/react-native-skia": "*"
     react: "*"
@@ -10944,7 +10944,7 @@ __metadata:
       optional: true
     react-native-worklets-core:
       optional: true
-  checksum: bd471d6837f9c80278d10ed9544eb359a1ea376ea5805554cfc81605f802bdd5046ffb592f1a354238419a7cd6a3816564ef304e38b0e4857a6fa1bb2a39f3fe
+  checksum: 5301b9cb303d3ee7b9f4d4c0368ace06d62826c6c4deb92c744a3dfb8a4de30f2fd5d40374bd529a3e5647245a02736d45fb0a2c6f9bbb3350bc9cc9951e57a6
   languageName: node
   linkType: hard
 
@@ -13063,7 +13063,7 @@ __metadata:
     react-native-image-picker: ^7.1.2
     react-native-permissions: ^4.1.5
     react-native-reanimated: ^3.13.0
-    react-native-vision-camera: 4.4.1
+    react-native-vision-camera: 4.5.0
     react-native-worklets-core: 1.3.3
   languageName: unknown
   linkType: soft
@@ -13088,7 +13088,7 @@ __metadata:
     react: 18.2.0
     react-native: 0.74.3
     react-native-builder-bob: ^0.25.0
-    react-native-vision-camera: 4.4.1
+    react-native-vision-camera: 4.5.0
     react-native-worklets-core: 1.3.3
     release-it: ^15.0.0
     turbo: ^1.10.7
