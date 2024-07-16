@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import {
   Camera as VisionCamera,
   // runAsync,
@@ -6,7 +7,7 @@ import {
 } from 'react-native-vision-camera';
 import {
   Worklets,
-  // useRunOnJS,
+  useRunOnJS,
   useSharedValue,
 } from 'react-native-worklets-core';
 import { useFaceDetector } from './FaceDetector';
@@ -102,7 +103,7 @@ export const Camera = React.forwardRef(
     /**
      * Runs on detection callback on js thread
      */
-    const runOnJs = useRunInJS(faceDetectionCallback, [faceDetectionCallback]);
+    const runInJs = useRunInJS(faceDetectionCallback, [faceDetectionCallback]);
 
     /**
      * Async context that will handle face detection
@@ -115,7 +116,7 @@ export const Camera = React.forwardRef(
           // increment frame count so we can use frame on
           // js side without frame processor getting stuck
           frame.incrementRefCount();
-          runOnJs(faces, frame).finally(() => {
+          runInJs(faces, frame).finally(() => {
             'worklet';
             // finally decrement frame count so it can be dropped
             frame.decrementRefCount();
@@ -127,7 +128,7 @@ export const Camera = React.forwardRef(
           isAsyncContextBusy.value = false;
         }
       },
-      [detectFaces, runOnJs]
+      [detectFaces, runInJs]
     );
 
     /**
@@ -150,7 +151,7 @@ export const Camera = React.forwardRef(
     /**
      * Camera frame processor
      */
-    const cameraFrameProcessor = useFrameProcessor(
+    const processorAndroid = useFrameProcessor(
       (frame) => {
         'worklet';
         runAsync(frame);
@@ -162,30 +163,31 @@ export const Camera = React.forwardRef(
     // use bellow when vision-camera's
     // context creation issue is solved
     //
-    // /**
-    //  * Runs on detection callback on js thread
-    //  */
-    // const runOnJs = useRunOnJS( faceDetectionCallback, [
-    //   faceDetectionCallback
-    // ] )
+    /**
+     * Runs on detection callback on js thread
+     */
+    const runOnJs = useRunOnJS(faceDetectionCallback, [faceDetectionCallback]);
 
-    // const cameraFrameProcessor = useFrameProcessor( ( frame ) => {
-    //   'worklet'
-    //   runAsync( frame, () => {
-    //     'worklet'
-    //     runOnJs(
-    //       detectFaces( frame ),
-    //       frame
-    //     )
-    //   } )
-    // }, [ runOnJs ] )
+    const processorIOS = useFrameProcessor(
+      (frame) => {
+        'worklet';
+        runOnJs(detectFaces(frame), frame);
+        // runAsync(frame, () => {
+        //   'worklet';
+        //   runOnJs(detectFaces(frame), frame);
+        // });
+      },
+      [runOnJs]
+    );
 
     return (
       <VisionCamera
         {...props}
         ref={ref}
-        frameProcessor={cameraFrameProcessor}
-        pixelFormat="yuv"
+        frameProcessor={
+          Platform.OS === 'android' ? processorAndroid : processorIOS
+        }
+        pixelFormat={'yuv'}
       />
     );
   }

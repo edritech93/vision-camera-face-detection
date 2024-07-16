@@ -112,7 +112,7 @@ export default function App() {
       aFaceH.value = height;
       aFaceX.value = x;
       aFaceY.value = y;
-      console.log(new Date().toTimeString(), 'data', face.data.length);
+      console.log(new Date().toTimeString(), 'data', face?.data?.length);
     }
   }
 
