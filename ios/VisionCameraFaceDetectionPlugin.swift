@@ -267,6 +267,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
             
             let faces: [Face] = try faceDetector!.results(in: image)
             for face in faces {
+                var map: [String: Any] = [:]
                 guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: orientation) else {
                     return nil
                 }
@@ -284,15 +285,12 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
                 try interpreter?.invoke()
                 let outputTensor: Tensor? = try interpreter?.output(at: 0)
                 
-                var map: [String: Any] = [:]
                 if ((outputTensor?.data) != nil) {
                     let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
                     map["data"] = result
                 } else {
                     map["data"] = []
                 }
-                map["base64"] = FaceHelper.convertImageToBase64(image: imageCrop)
-                
                 if runLandmarks {
                     map["landmarks"] = processLandmarks(
                         from: face,
@@ -300,13 +298,11 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
                         scaleY: scaleY
                     )
                 }
-                
                 if runClassifications {
                     map["leftEyeOpenProbability"] = face.leftEyeOpenProbability
                     map["rightEyeOpenProbability"] = face.rightEyeOpenProbability
                     map["smilingProbability"] = face.smilingProbability
                 }
-                
                 if runContours {
                     map["contours"] = processFaceContours(
                         from: face,
@@ -314,11 +310,9 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
                         scaleY: scaleY
                     )
                 }
-                
                 if trackingEnabled {
                     map["trackingId"] = face.trackingID
                 }
-                
                 map["rollAngle"] = face.headEulerAngleZ
                 map["pitchAngle"] = face.headEulerAngleX
                 map["yawAngle"] = face.headEulerAngleY
@@ -330,13 +324,11 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
                     scaleX: scaleX,
                     scaleY: scaleY
                 )
-                
                 result.append(map)
             }
         } catch let error {
             print("Error processing face detection: \(error)")
         }
-        
         return result
     }
 }

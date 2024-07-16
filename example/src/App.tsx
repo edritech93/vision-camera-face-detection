@@ -102,25 +102,17 @@ export default function App() {
    * @param {Face[]} faces Detection result
    * @returns {void}
    */
-  function handleFacesDetected(faces: Face[], frame: Frame): void {
-    console.log('faces', faces.length, 'frame', frame.toString(), 'data');
+  function handleFacesDetected(faces: Face[], _: Frame) {
     if (Object.keys(faces).length <= 0) return;
     const face = faces[0];
     if (face) {
-      console.log('data', face.data.length);
-      // if no faces are detected we do nothing
-
       const { bounds } = face;
       const { width, height, x, y } = bounds;
       aFaceW.value = width;
       aFaceH.value = height;
       aFaceX.value = x;
       aFaceY.value = y;
-
-      // only call camera methods if ref is defined
-      if (camera.current) {
-        // take photo, capture video, etc...
-      }
+      console.log(new Date().toTimeString(), 'data', face.data.length);
     }
   }
 
