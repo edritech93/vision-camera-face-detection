@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, Button, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  Button,
+  View,
+  ActivityIndicator,
+  Platform,
+} from 'react-native';
 import {
   type Frame,
   Camera as VisionCamera,
@@ -11,12 +18,20 @@ import {
   type Face,
   type FaceDetectionOptions,
   initTensor,
+  detectFromBase64,
+  type DetectBas64Type,
 } from 'vision-camera-face-detection';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import {
+  type ImageLibraryOptions,
+  type ImagePickerResponse,
+  launchImageLibrary,
+} from 'react-native-image-picker';
+import { getPermissionReadStorage } from './permission';
 
 export default function App() {
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -24,6 +39,9 @@ export default function App() {
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
   const [autoScale, setAutoScale] = useState<boolean>(true);
   const [facingFront, setFacingFront] = useState<boolean>(true);
+  const [loadingSample, setLoadingSample] = useState<boolean>(false);
+  const [dataSample, setDataSample] = useState<number[]>([]);
+  const [distanceNum, setDistanceNum] = useState<number>(2);
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     performanceMode: 'fast',
     classificationMode: 'all',
@@ -47,7 +65,7 @@ export default function App() {
     borderLeftColor: 'rgb(0,255,0)',
     borderRightColor: 'rgb(0,255,0)',
     borderBottomColor: 'rgb(0,255,0)',
-    borderTopColor: 'rgb(255,0,0)',
+    borderTopColor: 'rgb(0,255,0)',
     width: withTiming(aFaceW.value, {
       duration: 100,
     }),
@@ -112,8 +130,60 @@ export default function App() {
       aFaceH.value = height;
       aFaceX.value = x;
       aFaceY.value = y;
-      console.log(new Date().toTimeString(), 'data', face?.data?.length);
+      // console.log(new Date().toTimeString(), 'data', face?.data?.length);
+      if (face.data) {
+        const objRes: number[] =
+          Platform.OS === 'android' ? JSON.parse(face.data) : face.data;
+        const arrayCamera: any = objRes.map((e: number) => {
+          const stringFixed: string = e.toFixed(5);
+          return parseFloat(stringFixed);
+        });
+        const knownEmb: any = dataSample;
+        let distance = 0.0;
+        for (let i = 0; i < 192; i++) {
+          const diff = arrayCamera[i] - knownEmb[i];
+          distance += diff * diff;
+        }
+        console.log('distance => ', distance);
+        setDistanceNum(distance);
+      }
     }
+  }
+
+  async function _pickImageSample() {
+    await getPermissionReadStorage().catch((error) => {
+      console.log(error);
+      return;
+    });
+    setLoadingSample(true);
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+      includeBase64: true,
+    };
+    launchImageLibrary(options)
+      .then((response: ImagePickerResponse) => {
+        if (response && response.assets && response.assets.length > 0) {
+          const base64: string = response.assets[0]?.base64 ?? '';
+          detectFromBase64(base64)
+            .then((result: DetectBas64Type) => {
+              const objRes: number[] =
+                Platform.OS === 'android'
+                  ? JSON.parse(result.data)
+                  : result.data;
+              const arrayRes: number[] = objRes.map((e: number) => {
+                const stringFixed: string = e.toFixed(5);
+                return parseFloat(stringFixed);
+              });
+              setDataSample(arrayRes);
+              console.log('Load Sample Successfully');
+            })
+            .catch((error: Error) => {
+              console.log(error);
+            })
+            .finally(() => setLoadingSample(false));
+        }
+      })
+      .catch((error) => console.log(error));
   }
 
   return (
@@ -137,14 +207,30 @@ export default function App() {
                     autoScale,
                   }}
                 />
-                <Animated.View style={animatedStyle} />
+                <Animated.View style={animatedStyle}>
+                  <Text style={styles.textDistance}>{distanceNum}</Text>
+                </Animated.View>
                 {cameraPaused && (
                   <Text style={styles.textPaused}>Camera is PAUSED</Text>
                 )}
               </>
             )}
             {!cameraMounted && (
-              <Text style={styles.textNoMounted}>Camera is NOT mounted</Text>
+              <View style={styles.wrapCenter}>
+                <Text style={styles.textNoMounted}>Camera is NOT mounted</Text>
+                <Button
+                  title={'Pick Image Sample'}
+                  onPress={() => _pickImageSample()}
+                />
+                <ActivityIndicator
+                  color={'red'}
+                  size={'large'}
+                  animating={loadingSample}
+                />
+                {dataSample.length > 0 && (
+                  <Text>{'Data Sample Loaded...!'}</Text>
+                )}
+              </View>
             )}
           </>
         ) : (
@@ -219,5 +305,13 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-around',
+  },
+  wrapCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textDistance: {
+    backgroundColor: 'rgb(0,255,0)',
   },
 });

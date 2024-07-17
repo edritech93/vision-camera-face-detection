@@ -25,7 +25,7 @@ export interface Face {
   smilingProbability: number;
   contours: Contours;
   landmarks: Landmarks;
-  data: number[];
+  data: any;
 }
 
 export interface Bounds {
