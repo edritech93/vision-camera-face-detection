@@ -5,7 +5,6 @@ import {
   Button,
   View,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import {
   type Frame,
@@ -123,6 +122,7 @@ export default function App() {
   function handleFacesDetected(faces: Face[], _: Frame) {
     if (Object.keys(faces).length <= 0) return;
     const face = faces[0];
+    // console.log(new Date().toTimeString(), 'data', face?.data?.length);
     if (face) {
       const { bounds } = face;
       const { width, height, x, y } = bounds;
@@ -130,17 +130,14 @@ export default function App() {
       aFaceH.value = height;
       aFaceX.value = x;
       aFaceY.value = y;
-      // console.log(new Date().toTimeString(), 'data', face?.data?.length);
       if (face.data) {
-        const objRes: number[] =
-          Platform.OS === 'android' ? JSON.parse(face.data) : face.data;
-        const arrayCamera: any = objRes.map((e: number) => {
+        const arrayCamera: any = face.data.map((e: number) => {
           const stringFixed: string = e.toFixed(5);
           return parseFloat(stringFixed);
         });
         const knownEmb: any = dataSample;
         let distance = 0.0;
-        for (let i = 0; i < 192; i++) {
+        for (let i = 0; i < arrayCamera.length; i++) {
           const diff = arrayCamera[i] - knownEmb[i];
           distance += diff * diff;
         }
@@ -166,11 +163,7 @@ export default function App() {
           const base64: string = response.assets[0]?.base64 ?? '';
           detectFromBase64(base64)
             .then((result: DetectBas64Type) => {
-              const objRes: number[] =
-                Platform.OS === 'android'
-                  ? JSON.parse(result.data)
-                  : result.data;
-              const arrayRes: number[] = objRes.map((e: number) => {
+              const arrayRes: number[] = result.data.map((e: number) => {
                 const stringFixed: string = e.toFixed(5);
                 return parseFloat(stringFixed);
               });
@@ -183,7 +176,10 @@ export default function App() {
             .finally(() => setLoadingSample(false));
         }
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        setLoadingSample(false);
+      });
   }
 
   return (
