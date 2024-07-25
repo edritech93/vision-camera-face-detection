@@ -5,6 +5,7 @@ import {
   Button,
   View,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import {
   type Frame,
@@ -40,6 +41,7 @@ export default function App() {
   const [facingFront, setFacingFront] = useState<boolean>(true);
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
+  const [imageSample, setImageSample] = useState<string>('');
   const [distanceNum, setDistanceNum] = useState<number>(2);
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     performanceMode: 'fast',
@@ -119,10 +121,16 @@ export default function App() {
    * @param {Face[]} faces Detection result
    * @returns {void}
    */
-  function handleFacesDetected(faces: Face[], _: Frame) {
+  function handleFacesDetected(faces: Face[], frame: Frame) {
+    console.log(
+      new Date().toTimeString(),
+      'faces',
+      faces.length,
+      'frame',
+      frame.toString()
+    );
     if (Object.keys(faces).length <= 0) return;
     const face = faces[0];
-    // console.log(new Date().toTimeString(), 'data', face?.data?.length);
     if (face) {
       const { bounds } = face;
       const { width, height, x, y } = bounds;
@@ -141,7 +149,6 @@ export default function App() {
           const diff = arrayCamera[i] - knownEmb[i];
           distance += diff * diff;
         }
-        console.log('distance => ', distance);
         setDistanceNum(distance);
       }
     }
@@ -168,6 +175,7 @@ export default function App() {
                 return parseFloat(stringFixed);
               });
               setDataSample(arrayRes);
+              setImageSample(result.base64);
               console.log('Load Sample Successfully');
             })
             .catch((error: Error) => {
@@ -224,7 +232,10 @@ export default function App() {
                   animating={loadingSample}
                 />
                 {dataSample.length > 0 && (
-                  <Text>{'Data Sample Loaded...!'}</Text>
+                  <Image
+                    source={{ uri: `data:image/png;base64,${imageSample}` }}
+                    style={styles.imageBase64Face}
+                  />
                 )}
               </View>
             )}
@@ -309,5 +320,9 @@ const styles = StyleSheet.create({
   },
   textDistance: {
     backgroundColor: 'rgb(0,255,0)',
+  },
+  imageBase64Face: {
+    height: 100,
+    width: 100,
   },
 });

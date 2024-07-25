@@ -187,7 +187,7 @@ export const Camera = React.forwardRef(
         frameProcessor={
           Platform.OS === 'android' ? processorAndroid : processorIOS
         }
-        pixelFormat={'yuv'}
+        pixelFormat={Platform.OS === 'android' ? 'yuv' : 'rgb'}
       />
     );
   }
