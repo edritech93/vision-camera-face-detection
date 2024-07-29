@@ -39,6 +39,7 @@ export default function App() {
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
   const [autoScale, setAutoScale] = useState<boolean>(true);
   const [facingFront, setFacingFront] = useState<boolean>(true);
+  const [enableTensor, setEnableTensor] = useState<boolean>(false);
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
@@ -200,7 +201,7 @@ export default function App() {
                 <Camera
                   ref={camera as any}
                   style={StyleSheet.absoluteFill}
-                  isActive={true}
+                  isActive={!cameraPaused}
                   device={cameraDevice}
                   onError={handleCameraMountError}
                   faceDetectionCallback={handleFacesDetected}
@@ -209,6 +210,7 @@ export default function App() {
                   faceDetectionOptions={{
                     ...faceDetectionOptions,
                     autoScale,
+                    enableTensor,
                   }}
                 />
                 <Animated.View style={animatedStyle}>
@@ -248,6 +250,10 @@ export default function App() {
       </View>
 
       <View style={styles.wrapMainBtn}>
+        <Button
+          onPress={() => setEnableTensor((current) => !current)}
+          title={`${enableTensor ? 'Disable' : 'Enable'} Tensor`}
+        />
         <View style={styles.wrapBtn}>
           <Button
             onPress={() => setFacingFront((current) => !current)}

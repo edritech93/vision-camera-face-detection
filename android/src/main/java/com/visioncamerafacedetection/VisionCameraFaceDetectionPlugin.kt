@@ -42,10 +42,14 @@ class VisionCameraFaceDetectionPlugin(
   private var runClassifications = false
   private var runContours = false
   private var trackingEnabled = false
+  private var enableTensor = false
 
   init {
     // handle auto scaling
     autoScale = options?.get("autoScale").toString() == "true"
+
+    // handle enable/disable tensor
+    enableTensor = options?.get("enableTensor").toString() == "true"
 
     // initializes faceDetector on creation
     var performanceModeValue = FaceDetectorOptions.PERFORMANCE_MODE_FAST
@@ -117,16 +121,19 @@ class VisionCameraFaceDetectionPlugin(
         bounds["x"] = (-y + sourceWidth * scaleX) - width
         bounds["y"] = (-x + sourceHeight * scaleY) - height
       }
+
       Orientation.LANDSCAPE_LEFT -> {
         // device is portrait
         bounds["x"] = (-x + sourceWidth * scaleX) - width
         bounds["y"] = y
       }
+
       Orientation.PORTRAIT_UPSIDE_DOWN -> {
         // device is landscape right
         bounds["x"] = y
         bounds["y"] = x
       }
+
       Orientation.LANDSCAPE_RIGHT -> {
         // device is upside down
         bounds["x"] = x
@@ -289,30 +296,36 @@ class VisionCameraFaceDetectionPlugin(
       val task = faceDetector!!.process(image)
       val faces = Tasks.await(task)
       faces.forEach { face ->
-        val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(image)
-        val bmpFaceResult =
-          Bitmap.createBitmap(
-            TF_OD_API_INPUT_SIZE,
-            TF_OD_API_INPUT_SIZE,
-            Bitmap.Config.ARGB_8888
-          )
-        val faceBB = RectF(face.boundingBox)
-        val cvFace = Canvas(bmpFaceResult)
-        val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()
-        val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
-        val matrix = Matrix()
-        matrix.postTranslate(-faceBB.left, -faceBB.top)
-        matrix.postScale(sx, sy)
-        cvFace.drawBitmap(bmpFrameResult, matrix, null)
-        val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceResult)
-        val output: FloatBuffer = FloatBuffer.allocate(192)
-        interpreter?.run(input, output)
-
-        val arrayData: MutableList<Any> = ArrayList()
-        for (i: Float in output.array()) {
-          arrayData.add(i.toDouble())
-        }
         val map: MutableMap<String, Any> = HashMap()
+        val arrayData: MutableList<Any> = ArrayList()
+        if (enableTensor) {
+          val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(image)
+          val bmpFaceResult =
+            Bitmap.createBitmap(
+              TF_OD_API_INPUT_SIZE,
+              TF_OD_API_INPUT_SIZE,
+              Bitmap.Config.ARGB_8888
+            )
+          val faceBB = RectF(face.boundingBox)
+          val cvFace = Canvas(bmpFaceResult)
+          val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()
+          val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
+          val matrix = Matrix()
+          matrix.postTranslate(-faceBB.left, -faceBB.top)
+          matrix.postScale(sx, sy)
+          cvFace.drawBitmap(bmpFrameResult, matrix, null)
+          val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceResult)
+          val output: FloatBuffer = FloatBuffer.allocate(192)
+          interpreter?.run(input, output)
+
+          for (i: Float in output.array()) {
+            arrayData.add(i.toDouble())
+          }
+          map["data"] = arrayData
+        } else {
+          map["data"] = arrayData
+        }
+
         if (runLandmarks) {
           map["landmarks"] = processLandmarks(
             face,
@@ -346,7 +359,6 @@ class VisionCameraFaceDetectionPlugin(
           scaleX,
           scaleY
         )
-        map["data"] = arrayData
         result.add(map)
       }
     } catch (e: Exception) {
