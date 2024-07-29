@@ -119,6 +119,11 @@ export interface FaceDetectionOptions {
    * @default false
    */
   autoScale?: boolean;
+
+  /**
+   * for enable/disable tensorflow lite logic, just face detection
+   */
+  enableTensor?: boolean;
 }
 
 /**

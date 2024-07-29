@@ -20,6 +20,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
     private var runClassifications = false
     private var runContours = false
     private var trackingEnabled = false
+    private var enableTensor = false
     
     public override init(
         proxy: VisionCameraProxyHolder,
@@ -30,6 +31,9 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
         
         // handle auto scaling
         autoScale = config?["autoScale"] as? Bool == true
+
+        // handle enable/disable tensor
+        enableTensor = config?["enableTensor"] as? Bool == true
         
         // initializes faceDetector on creation
         let minFaceSize = 0.15
@@ -268,26 +272,30 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
             let faces: [Face] = try faceDetector!.results(in: image)
             for face in faces {
                 var map: [String: Any] = [:]
-                guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: orientation) else {
-                    return nil
-                }
-                guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
-                    return nil
-                }
-                guard let rgbData = FaceHelper.rgbDataFromBuffer(
-                    pixelBuffer,
-                    byteCount: batchSize * inputWidth * inputHeight * inputChannels,
-                    isModelQuantized: false
-                ) else {
-                    return nil
-                }
-                try interpreter?.copy(rgbData, toInputAt: 0)
-                try interpreter?.invoke()
-                let outputTensor: Tensor? = try interpreter?.output(at: 0)
-                
-                if ((outputTensor?.data) != nil) {
-                    let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
-                    map["data"] = result
+                if enableTensor {
+                    guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: orientation) else {
+                        return nil
+                    }
+                    guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
+                        return nil
+                    }
+                    guard let rgbData = FaceHelper.rgbDataFromBuffer(
+                        pixelBuffer,
+                        byteCount: batchSize * inputWidth * inputHeight * inputChannels,
+                        isModelQuantized: false
+                    ) else {
+                        return nil
+                    }
+                    try interpreter?.copy(rgbData, toInputAt: 0)
+                    try interpreter?.invoke()
+                    let outputTensor: Tensor? = try interpreter?.output(at: 0)
+                    
+                    if ((outputTensor?.data) != nil) {
+                        let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
+                        map["data"] = result
+                    } else {
+                        map["data"] = []
+                    }
                 } else {
                     map["data"] = []
                 }
