@@ -326,6 +326,7 @@ const styles = StyleSheet.create({
   },
   textDistance: {
     backgroundColor: 'rgb(0,255,0)',
+    color: 'black',
   },
   imageBase64Face: {
     height: 100,
