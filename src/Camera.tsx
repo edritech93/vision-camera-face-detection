@@ -182,12 +182,12 @@ export const Camera = React.forwardRef(
 
     return (
       <VisionCamera
-        {...props}
         ref={ref}
         frameProcessor={
           Platform.OS === 'android' ? processorAndroid : processorIOS
         }
         pixelFormat={Platform.OS === 'android' ? 'yuv' : 'rgb'}
+        {...props}
       />
     );
   }
