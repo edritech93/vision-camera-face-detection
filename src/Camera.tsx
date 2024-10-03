@@ -2,12 +2,11 @@ import React from 'react';
 import { Platform } from 'react-native';
 import {
   Camera as VisionCamera,
-  // runAsync,
   useFrameProcessor,
 } from 'react-native-vision-camera';
 import {
   Worklets,
-  useRunOnJS,
+  // useRunOnJS,
   useSharedValue,
 } from 'react-native-worklets-core';
 import { useFaceDetector } from './FaceDetector';
@@ -166,26 +165,27 @@ export const Camera = React.forwardRef(
     /**
      * Runs on detection callback on js thread
      */
-    const runOnJs = useRunOnJS(faceDetectionCallback, [faceDetectionCallback]);
+    // const runOnJs = useRunOnJS(faceDetectionCallback, [faceDetectionCallback]);
 
-    const processorIOS = useFrameProcessor(
-      (frame) => {
-        'worklet';
-        runOnJs(detectFaces(frame), frame);
-        // runAsync(frame, () => {
-        //   'worklet';
-        //   runOnJs(detectFaces(frame), frame);
-        // });
-      },
-      [runOnJs]
-    );
+    // const processorIOS = useFrameProcessor(
+    //   (frame) => {
+    //     'worklet';
+    //     runOnJs(detectFaces(frame), frame);
+    //     // runAsync(frame, () => {
+    //     //   'worklet';
+    //     //   runOnJs(detectFaces(frame), frame);
+    //     // });
+    //   },
+    //   [runOnJs]
+    // );
 
     return (
       <VisionCamera
         ref={ref}
-        frameProcessor={
-          Platform.OS === 'android' ? processorAndroid : processorIOS
-        }
+        // frameProcessor={
+        //   Platform.OS === 'android' ? processorAndroid : processorIOS
+        // }
+        frameProcessor={processorAndroid}
         pixelFormat={Platform.OS === 'android' ? 'yuv' : 'rgb'}
         {...props}
       />
