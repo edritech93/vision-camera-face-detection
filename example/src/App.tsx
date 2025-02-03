@@ -20,7 +20,7 @@ import {
   initTensor,
   detectFromBase64,
   type DetectBas64Type,
-} from '@edritech93/vision-camera-face-detection';
+} from 'vision-camera-face-detection';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
