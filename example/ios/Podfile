@@ -10,7 +10,7 @@ end
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, min_ios_version_supported
+platform :ios, 15.5
 prepare_react_native_project!
 
 # ⬇️ uncomment wanted permissions
@@ -45,6 +45,7 @@ end
 target 'VisionCameraFaceDetectionExample' do
   config = use_native_modules!
 
+  use_frameworks! :linkage => :static
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

@@ -11,6 +11,11 @@
     "postinstall": "patch-package && cd ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod update"
   },
   "dependencies": {
+    "@react-native-firebase/analytics": "^21.7.1",
+    "@react-native-firebase/app": "^21.7.1",
+    "@react-native-firebase/crashlytics": "^21.7.1",
+    "@react-native-firebase/messaging": "^21.7.1",
+    "@react-native-firebase/remote-config": "^21.7.1",
     "react": "18.3.1",
     "react-native": "0.77.0",
     "react-native-image-picker": "^8.0.0",
