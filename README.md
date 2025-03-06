@@ -5,14 +5,14 @@ Plugin Face Detection for Vision Camera 4
 ## Installation
 
 ```sh
-npm install @edritech/vision-camera-face-detection
+npm install vision-camera-face-detection
 ```
 
 ## Usage
 
 
 ```js
-import { multiply } from '@edritech/vision-camera-face-detection';
+import { multiply } from 'vision-camera-face-detection';
 
 // ...
 
