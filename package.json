@@ -39,8 +39,8 @@
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
     "release": "release-it --only-version",
-    "codegen": "cd example/android && ./gradlew generateCodegenArtifactsFromSchema",
-    "postinstall": "yarn codegen"
+    "codegen:android": "cd example/android && ./gradlew generateCodegenArtifactsFromSchema",
+    "codegen:ios": "node node_modules/react-native/scripts/generate-codegen-artifacts.js --path . --outputPath example/ios/ --targetPlatform ios"
   },
   "keywords": [
     "react-native",
