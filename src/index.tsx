@@ -1,3 +1,3 @@
-// export * from './Camera';
-// export * from './FaceDetector';
+export * from './Camera';
+export * from './FaceDetector';
 export * from './Tensor';
