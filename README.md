@@ -16,7 +16,7 @@ import { multiply } from 'vision-camera-face-detection';
 
 // ...
 
-const result = await multiply(3, 7);
+const result = multiply(3, 7);
 ```
 
 

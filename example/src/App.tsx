@@ -14,9 +14,9 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import {
-  Camera,
-  type Face,
-  type FaceDetectionOptions,
+  // Camera,
+  // type Face,
+  // type FaceDetectionOptions,
   initTensor,
   detectFromBase64,
   type DetectBas64Type,
@@ -44,15 +44,15 @@ export default function App() {
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
   const [distanceNum, setDistanceNum] = useState<number>(2);
-  const faceDetectionOptions = useRef<FaceDetectionOptions>({
-    performanceMode: 'fast',
-    classificationMode: 'all',
-  }).current;
+  // const faceDetectionOptions = useRef<FaceDetectionOptions>({
+  //   performanceMode: 'fast',
+  //   classificationMode: 'all',
+  // }).current;
   const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
   //
   // vision camera ref
   //
-  const camera = useRef<VisionCamera>(null);
+  // const camera = useRef<VisionCamera>(null);
   //
   // face rectangle position
   //
@@ -93,9 +93,8 @@ export default function App() {
   }, [hasPermission, requestPermission]);
 
   useEffect(() => {
-    initTensor('mobile_face_net', 1)
-      .then((response: any) => console.log(response))
-      .catch((error: any) => console.log(error));
+    const response = initTensor('mobile_face_net', 1);
+    console.log(response);
   }, []);
 
   /**
@@ -169,20 +168,26 @@ export default function App() {
       .then((response: ImagePickerResponse) => {
         if (response && response.assets && response.assets.length > 0) {
           const base64: string = response.assets[0]?.base64 ?? '';
-          detectFromBase64(base64)
-            .then((result: DetectBas64Type) => {
-              const arrayRes: number[] = result.data.map((e: number) => {
-                const stringFixed: string = e.toFixed(5);
-                return parseFloat(stringFixed);
-              });
-              setDataSample(arrayRes);
-              setImageSample(result.base64);
-              console.log('Load Sample Successfully');
-            })
-            .catch((error: Error) => {
-              console.log(error);
-            })
-            .finally(() => setLoadingSample(false));
+          const result: DetectBas64Type = detectFromBase64(base64);
+
+          const arrayRes: number[] = result.data.map(
+            (e: string | number): number => {
+              switch (typeof e) {
+                case 'string':
+                  return parseFloat(e);
+
+                case 'number':
+                  return parseFloat(e.toFixed(5));
+
+                default:
+                  return e;
+              }
+            }
+          );
+          setDataSample(arrayRes);
+          setImageSample(result.base64);
+          console.log('Load Sample Successfully');
+          setLoadingSample(false);
         }
       })
       .catch((error) => {
@@ -198,7 +203,7 @@ export default function App() {
           <>
             {cameraMounted && (
               <>
-                <Camera
+                {/* <Camera
                   ref={camera as any}
                   style={StyleSheet.absoluteFill}
                   isActive={!cameraPaused}
@@ -212,7 +217,7 @@ export default function App() {
                     autoScale,
                     enableTensor,
                   }}
-                />
+                /> */}
                 <Animated.View style={animatedStyle}>
                   <Text style={styles.textDistance}>{distanceNum}</Text>
                 </Animated.View>

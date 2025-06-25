@@ -1,35 +1,17 @@
-import { NativeModules, Platform } from 'react-native';
+import VisionCameraFaceDetection, {
+  type NativeDetectBas64Type,
+} from './NativeVisionCameraFaceDetection';
 
-const LINKING_ERROR =
-  `The package 'vision-camera-face-detection' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+export type DetectBas64Type = NativeDetectBas64Type;
 
-const VisionCameraFaceDetectionModule =
-  NativeModules.VisionCameraFaceDetectionModule
-    ? NativeModules.VisionCameraFaceDetectionModule
-    : new Proxy(
-        {},
-        {
-          get() {
-            throw new Error(LINKING_ERROR);
-          },
-        }
-      );
-
-export function initTensor(modelPath: string, count?: number): Promise<string> {
-  return VisionCameraFaceDetectionModule.initTensor(modelPath, count);
+export function multiply(a: number, b: number): number {
+  return VisionCameraFaceDetection.multiply(a, b);
 }
 
-export function detectFromBase64(
-  imageString: string
-): Promise<DetectBas64Type> {
-  return VisionCameraFaceDetectionModule.detectFromBase64(imageString);
+export function initTensor(modelPath: string, count?: number): string {
+  return VisionCameraFaceDetection.initTensor(modelPath, count);
 }
 
-export type DetectBas64Type = {
-  base64: string;
-  data: any;
-  message: string;
-};
+export function detectFromBase64(imageString: string): DetectBas64Type {
+  return VisionCameraFaceDetection.detectFromBase64(imageString);
+}
