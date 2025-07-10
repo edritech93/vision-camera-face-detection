@@ -8,16 +8,16 @@
     "start": "react-native start",
     "build:android": "react-native build-android --extra-params \"--no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a\"",
     "build:ios": "react-native build-ios --scheme VisionCameraFaceDetectionExample --mode Debug --extra-params \"-sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO\"",
-    "postinstall": "cd ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod update"
+    "postinstall": "cd ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod install"
   },
   "dependencies": {
     "react": "19.0.0",
-    "react-native": "0.78.0",
-    "react-native-image-picker": "^8.2.0",
-    "react-native-permissions": "^5.2.5",
-    "react-native-reanimated": "^3.17.1",
-    "react-native-vision-camera": "^4.6.4",
-    "react-native-worklets-core": "^1.5.0"
+    "react-native": "0.78.3",
+    "react-native-image-picker": "^8.2.1",
+    "react-native-permissions": "^5.4.1",
+    "react-native-reanimated": "^3.18.0",
+    "react-native-vision-camera": "^4.7.0",
+    "react-native-worklets-core": "^1.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -26,9 +26,9 @@
     "@react-native-community/cli": "15.0.1",
     "@react-native-community/cli-platform-android": "15.0.1",
     "@react-native-community/cli-platform-ios": "15.0.1",
-    "@react-native/babel-preset": "0.78.0",
-    "@react-native/metro-config": "0.78.0",
-    "@react-native/typescript-config": "0.78.0",
+    "@react-native/babel-preset": "0.78.3",
+    "@react-native/metro-config": "0.78.3",
+    "@react-native/typescript-config": "0.78.3",
     "react-native-builder-bob": "^0.36.0"
   },
   "engines": {
