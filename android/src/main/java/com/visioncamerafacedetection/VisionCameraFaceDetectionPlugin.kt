@@ -6,6 +6,7 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
+import android.view.Surface
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.common.internal.ImageConvertUtils
@@ -17,6 +18,7 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.face.FaceLandmark
 import com.mrousavy.camera.core.FrameInvalidError
 import com.mrousavy.camera.core.types.Orientation
+import com.mrousavy.camera.core.types.Position
 import com.mrousavy.camera.frameprocessors.Frame
 import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
 import com.mrousavy.camera.frameprocessors.VisionCameraProxy
@@ -24,29 +26,26 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
 private const val TAG = "FaceDetector"
-
 class VisionCameraFaceDetectionPlugin(
   proxy: VisionCameraProxy,
   options: Map<String, Any>?
 ) : FrameProcessorPlugin() {
-  // device display data
-  private val displayMetrics = proxy.context.resources.displayMetrics
-  private val density = displayMetrics.density
-  private val windowWidth = (displayMetrics.widthPixels).toDouble() / density
-  private val windowHeight = (displayMetrics.heightPixels).toDouble() / density
-
   // detection props
-  private var autoScale = false
+  private var autoMode = false
   private var faceDetector: FaceDetector? = null
   private var runLandmarks = false
   private var runClassifications = false
   private var runContours = false
   private var trackingEnabled = false
+  private var windowWidth = 1.0
+  private var windowHeight = 1.0
+  private var cameraFacing: Position = Position.FRONT
+  private val orientationManager = VisionCameraFaceDetectorOrientation(proxy.context)
   private var enableTensor = false
 
   init {
     // handle auto scaling
-    autoScale = options?.get("autoScale").toString() == "true"
+    autoMode = options?.get("autoMode").toString() == "true"
 
     // handle enable/disable tensor
     enableTensor = options?.get("enableTensor").toString() == "true"
@@ -56,7 +55,13 @@ class VisionCameraFaceDetectionPlugin(
     var landmarkModeValue = FaceDetectorOptions.LANDMARK_MODE_NONE
     var classificationModeValue = FaceDetectorOptions.CLASSIFICATION_MODE_NONE
     var contourModeValue = FaceDetectorOptions.CONTOUR_MODE_NONE
-    var minFaceSize = 0.15f
+
+    windowWidth = (options?.get("windowWidth") ?: 1.0) as Double
+    windowHeight = (options?.get("windowHeight") ?: 1.0) as Double
+
+    if (options?.get("cameraFacing").toString() == "back") {
+      cameraFacing = Position.BACK
+    }
 
     if (options?.get("performanceMode").toString() == "accurate") {
       performanceModeValue = FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE
@@ -77,25 +82,19 @@ class VisionCameraFaceDetectionPlugin(
       contourModeValue = FaceDetectorOptions.CONTOUR_MODE_ALL
     }
 
-    val minFaceSizeParam = options?.get("minFaceSize").toString()
-    if (
-      minFaceSizeParam != "null" &&
-      minFaceSizeParam != minFaceSize.toString()
-    ) {
-      minFaceSize = minFaceSizeParam.toFloat()
-    }
-
+    val minFaceSize: Double = (options?.get("minFaceSize") ?: 0.15) as Double
     val optionsBuilder = FaceDetectorOptions.Builder()
       .setPerformanceMode(performanceModeValue)
       .setLandmarkMode(landmarkModeValue)
       .setContourMode(contourModeValue)
       .setClassificationMode(classificationModeValue)
-      .setMinFaceSize(minFaceSize)
+      .setMinFaceSize(minFaceSize.toFloat())
 
     if (options?.get("trackingEnabled").toString() == "true") {
       trackingEnabled = true
       optionsBuilder.enableTracking()
     }
+
     faceDetector = FaceDetection.getClient(
       optionsBuilder.build()
     )
@@ -105,43 +104,72 @@ class VisionCameraFaceDetectionPlugin(
     boundingBox: Rect,
     sourceWidth: Double,
     sourceHeight: Double,
-    orientation: Orientation,
     scaleX: Double,
     scaleY: Double
   ): Map<String, Any> {
     val bounds: MutableMap<String, Any> = HashMap()
     val width = boundingBox.width().toDouble() * scaleX
     val height = boundingBox.height().toDouble() * scaleY
-    val x = boundingBox.left.toDouble() * scaleX
-    val y = boundingBox.top.toDouble() * scaleY
+    val x = boundingBox.left.toDouble()
+    val y = boundingBox.top.toDouble()
 
-    when (orientation) {
-      Orientation.PORTRAIT -> {
-        // device is landscape left
-        bounds["x"] = (-y + sourceWidth * scaleX) - width
-        bounds["y"] = (-x + sourceHeight * scaleY) - height
-      }
-
-      Orientation.LANDSCAPE_LEFT -> {
-        // device is portrait
-        bounds["x"] = (-x + sourceWidth * scaleX) - width
-        bounds["y"] = y
-      }
-
-      Orientation.PORTRAIT_UPSIDE_DOWN -> {
-        // device is landscape right
-        bounds["x"] = y
-        bounds["y"] = x
-      }
-
-      Orientation.LANDSCAPE_RIGHT -> {
-        // device is upside down
-        bounds["x"] = x
-        bounds["y"] = (-y + sourceHeight * scaleY) - height
-      }
-    }
     bounds["width"] = width
     bounds["height"] = height
+    bounds["x"] = x * scaleX
+    bounds["y"] = y * scaleY
+
+    if(!autoMode) return bounds
+
+    // using front camera
+    if(cameraFacing == Position.FRONT) {
+      when (orientationManager.orientation) {
+        // device is portrait
+        Surface.ROTATION_0 -> {
+          bounds["x"] = ((-x * scaleX) + sourceWidth * scaleX) - width
+          bounds["y"] = y * scaleY
+        }
+        // device is landscape right
+        Surface.ROTATION_270 -> {
+          bounds["x"] = y * scaleX
+          bounds["y"] = x * scaleY
+        }
+        // device is upside down
+        Surface.ROTATION_180 -> {
+          bounds["x"] = x * scaleX
+          bounds["y"] = ((-y * scaleY) + sourceHeight * scaleY) - height
+        }
+        // device is landscape left
+        Surface.ROTATION_90 -> {
+          bounds["x"] = ((-y * scaleX) + sourceWidth * scaleX) - width
+          bounds["y"] = ((-x * scaleY) + sourceHeight * scaleY) - height
+        }
+      }
+      return bounds
+    }
+
+    // using back camera
+    when (orientationManager.orientation) {
+      // device is portrait
+      Surface.ROTATION_0 -> {
+        bounds["x"] = x * scaleX
+        bounds["y"] = y * scaleY
+      }
+      // device is landscape right
+      Surface.ROTATION_270 -> {
+        bounds["x"] = y * scaleX
+        bounds["y"] = ((-x * scaleY) + sourceHeight * scaleY) - height
+      }
+      // device is upside down
+      Surface.ROTATION_180 -> {
+        bounds["x"] =((-x * scaleX) + sourceWidth * scaleX) - width
+        bounds["y"] = ((-y * scaleY) + sourceHeight * scaleY) - height
+      }
+      // device is landscape left
+      Surface.ROTATION_90 -> {
+        bounds["x"] = ((-y * scaleX) + sourceWidth * scaleX) - width
+        bounds["y"] = x * scaleY
+      }
+    }
     return bounds
   }
 
@@ -178,23 +206,16 @@ class VisionCameraFaceDetectionPlugin(
     for (i in faceLandmarksTypesStrings.indices) {
       val landmark = face.getLandmark(faceLandmarksTypes[i])
       val landmarkName = faceLandmarksTypesStrings[i]
-      Log.d(
-        TAG,
-        "Getting '$landmarkName' landmark"
-      )
-      if (landmark == null) {
-        Log.d(
-          TAG,
-          "Landmark '$landmarkName' is null - going next"
-        )
-        continue
-      }
+
+      if (landmark == null) continue
+
       val point = landmark.position
       val currentPointsMap: MutableMap<String, Double> = HashMap()
       currentPointsMap["x"] = point.x.toDouble() * scaleX
       currentPointsMap["y"] = point.y.toDouble() * scaleY
       faceLandmarksTypesMap[landmarkName] = currentPointsMap
     }
+
     return faceLandmarksTypesMap
   }
 
@@ -241,42 +262,34 @@ class VisionCameraFaceDetectionPlugin(
     for (i in faceContoursTypesStrings.indices) {
       val contour = face.getContour(faceContoursTypes[i])
       val contourName = faceContoursTypesStrings[i]
-      Log.d(
-        TAG,
-        "Getting '$contourName' contour"
-      )
-      if (contour == null) {
-        Log.d(
-          TAG,
-          "Face contour '$contourName' is null - going next"
-        )
-        continue
-      }
+
+      if (contour == null) continue
+
       val points = contour.points
-      val pointsMap: MutableMap<String, Map<String, Double>> = HashMap()
+      val pointsMap: MutableList<Map<String, Double>> = mutableListOf()
       for (j in points.indices) {
         val currentPointsMap: MutableMap<String, Double> = HashMap()
         currentPointsMap["x"] = points[j].x.toDouble() * scaleX
         currentPointsMap["y"] = points[j].y.toDouble() * scaleY
-        pointsMap[j.toString()] = currentPointsMap
+        pointsMap.add(currentPointsMap)
       }
+
       faceContoursTypesMap[contourName] = pointsMap
     }
     return faceContoursTypesMap
   }
 
-  private fun getOrientation(
-    orientation: Orientation
-  ): Int {
-    return when (orientation) {
-      // device is landscape left
-      Orientation.PORTRAIT -> 0
+  private fun getImageOrientation(): Int {
+    return when (orientationManager.orientation) {
       // device is portrait
-      Orientation.LANDSCAPE_LEFT -> 270
+      Surface.ROTATION_0 -> if(cameraFacing == Position.FRONT) 270 else 90
       // device is landscape right
-      Orientation.PORTRAIT_UPSIDE_DOWN -> 180
-      // device is upside-down
-      Orientation.LANDSCAPE_RIGHT -> 90
+      Surface.ROTATION_270 -> if(cameraFacing == Position.FRONT) 180 else 180
+      // device is upside down
+      Surface.ROTATION_180 -> if(cameraFacing == Position.FRONT) 90 else 270
+      // device is landscape left
+      Surface.ROTATION_90 -> if(cameraFacing == Position.FRONT) 0 else 0
+      else -> 0
     }
   }
 
@@ -285,19 +298,19 @@ class VisionCameraFaceDetectionPlugin(
     params: Map<String, Any>?
   ): Any {
     val result = ArrayList<Map<String, Any>>()
+
     try {
-      val orientation = getOrientation(frame.orientation)
-      val image = InputImage.fromMediaImage(frame.image, orientation)
+      val image = InputImage.fromMediaImage(frame.image, getImageOrientation())
       // we need to invert sizes as frame is always -90deg rotated
       val width = image.height.toDouble()
       val height = image.width.toDouble()
-      val scaleX = if (autoScale) windowWidth / width else 1.0
-      val scaleY = if (autoScale) windowHeight / height else 1.0
+      val scaleX = if(autoMode) windowWidth / width else 1.0
+      val scaleY = if(autoMode) windowHeight / height else 1.0
       val task = faceDetector!!.process(image)
       val faces = Tasks.await(task)
-      faces.forEach { face ->
+      faces.forEach{face ->
         val map: MutableMap<String, Any> = HashMap()
-        val arrayData: MutableList<Any> = ArrayList()
+        val arrayData: MutableList<Double> = ArrayList()
         if (enableTensor) {
           val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(image)
           val bmpFaceResult =
@@ -333,11 +346,13 @@ class VisionCameraFaceDetectionPlugin(
             scaleY
           )
         }
+
         if (runClassifications) {
           map["leftEyeOpenProbability"] = face.leftEyeOpenProbability?.toDouble() ?: -1
           map["rightEyeOpenProbability"] = face.rightEyeOpenProbability?.toDouble() ?: -1
           map["smilingProbability"] = face.smilingProbability?.toDouble() ?: -1
         }
+
         if (runContours) {
           map["contours"] = processFaceContours(
             face,
@@ -345,9 +360,11 @@ class VisionCameraFaceDetectionPlugin(
             scaleY
           )
         }
+
         if (trackingEnabled) {
           map["trackingId"] = face.trackingId ?: -1
         }
+
         map["rollAngle"] = face.headEulerAngleZ.toDouble()
         map["pitchAngle"] = face.headEulerAngleX.toDouble()
         map["yawAngle"] = face.headEulerAngleY.toDouble()
@@ -355,7 +372,6 @@ class VisionCameraFaceDetectionPlugin(
           face.boundingBox,
           width,
           height,
-          frame.orientation,
           scaleX,
           scaleY
         )
@@ -366,6 +382,7 @@ class VisionCameraFaceDetectionPlugin(
     } catch (e: FrameInvalidError) {
       Log.e(TAG, "Frame invalid error: ", e)
     }
+
     return result
   }
 }

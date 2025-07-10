@@ -1,8 +1,11 @@
-import React from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+
+import React, { useMemo } from 'react';
 import { Platform } from 'react-native';
 import {
   Camera as VisionCamera,
   useFrameProcessor,
+  // useSkiaFrameProcessor,
 } from 'react-native-vision-camera';
 import {
   Worklets,
@@ -15,6 +18,7 @@ import { useFaceDetector } from './FaceDetector';
 import type { DependencyList, ForwardedRef } from 'react';
 import type {
   CameraProps,
+  DrawableFrame,
   Frame,
   FrameInternal,
 } from 'react-native-vision-camera';
@@ -32,6 +36,7 @@ type CallbackType = (faces: Face[], frame: Frame) => void | Promise<void>;
 type ComponentType = {
   faceDetectionOptions?: FaceDetectionOptions;
   faceDetectionCallback: CallbackType;
+  // skiaActions?: (faces: Face[], frame: DrawableFrame) => void | Promise<void>;
 } & CameraProps;
 
 /**
@@ -46,10 +51,9 @@ function useWorklet(
   func: (frame: FrameInternal) => void,
   dependencyList: DependencyList
 ): UseWorkletType {
-  const worklet = React.useMemo(() => {
+  const worklet = useMemo(() => {
     const context = Worklets.defaultContext;
     return context.createRunAsync(func);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencyList);
 
   return worklet;
@@ -67,8 +71,7 @@ function useRunInJS(
   func: CallbackType,
   dependencyList: DependencyList
 ): UseRunInJSType {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return React.useMemo(() => Worklets.createRunOnJS(func), dependencyList);
+  return useMemo(() => Worklets.createRunOnJS(func), dependencyList);
 }
 
 /**
@@ -79,7 +82,12 @@ function useRunInJS(
  */
 export const Camera = React.forwardRef(
   (
-    { faceDetectionOptions, faceDetectionCallback, ...props }: ComponentType,
+    {
+      faceDetectionOptions,
+      faceDetectionCallback,
+      // skiaActions,
+      ...props
+    }: ComponentType,
     ref: ForwardedRef<VisionCamera>
   ) => {
     const { detectFaces } = useFaceDetector(faceDetectionOptions);
@@ -87,6 +95,7 @@ export const Camera = React.forwardRef(
      * Is there an async task already running?
      */
     const isAsyncContextBusy = useSharedValue(false);
+    const faces = useSharedValue<string>('[]');
 
     /**
      * Throws logs/errors back on js thread
@@ -102,7 +111,7 @@ export const Camera = React.forwardRef(
     /**
      * Runs on detection callback on js thread
      */
-    const runInJs = useRunInJS(faceDetectionCallback, [faceDetectionCallback]);
+    const runOnJs = useRunInJS(faceDetectionCallback, [faceDetectionCallback]);
 
     /**
      * Async context that will handle face detection
@@ -111,11 +120,11 @@ export const Camera = React.forwardRef(
       (frame: FrameInternal) => {
         'worklet';
         try {
-          const faces = detectFaces(frame);
+          faces.value = JSON.stringify(detectFaces(frame));
           // increment frame count so we can use frame on
           // js side without frame processor getting stuck
           frame.incrementRefCount();
-          runInJs(faces, frame).finally(() => {
+          runOnJs(JSON.parse(faces.value), frame).finally(() => {
             'worklet';
             // finally decrement frame count so it can be dropped
             frame.decrementRefCount();
@@ -127,7 +136,7 @@ export const Camera = React.forwardRef(
           isAsyncContextBusy.value = false;
         }
       },
-      [detectFaces, runInJs]
+      [detectFaces, runOnJs]
     );
 
     /**
@@ -135,7 +144,7 @@ export const Camera = React.forwardRef(
      *
      * @param {Frame} frame Current frame
      */
-    function runAsync(frame: Frame) {
+    function runAsync(frame: Frame | DrawableFrame) {
       'worklet';
       if (isAsyncContextBusy.value) return;
       // set async context as busy
@@ -148,9 +157,23 @@ export const Camera = React.forwardRef(
     }
 
     /**
-     * Camera frame processor
+     * Skia frame processor
      */
-    const processorAndroid = useFrameProcessor(
+    // NOTE - temporary without skia
+    // const skiaFrameProcessor = useSkiaFrameProcessor(
+    //   (frame) => {
+    //     'worklet';
+    //     frame.render();
+    //     skiaActions!(JSON.parse(faces.value), frame);
+    //     runAsync(frame);
+    //   },
+    //   [runOnAsyncContext, skiaActions]
+    // );
+
+    /**
+     * Default frame processor
+     */
+    const cameraFrameProcessor = useFrameProcessor(
       (frame) => {
         'worklet';
         runAsync(frame);
@@ -158,34 +181,43 @@ export const Camera = React.forwardRef(
       [runOnAsyncContext]
     );
 
+    /**
+     * Camera frame processor
+     */
+    const frameProcessor = (() => {
+      // const { autoMode } = faceDetectionOptions ?? {};
+
+      // if (!autoMode && !!skiaActions) return skiaFrameProcessor;
+
+      return cameraFrameProcessor;
+    })();
+
     //
     // use bellow when vision-camera's
     // context creation issue is solved
     //
-    /**
-     * Runs on detection callback on js thread
-     */
-    // const runOnJs = useRunOnJS(faceDetectionCallback, [faceDetectionCallback]);
+    // /**
+    //  * Runs on detection callback on js thread
+    //  */
+    // const runOnJs = useRunOnJS( faceDetectionCallback, [
+    //   faceDetectionCallback
+    // ] )
 
-    // const processorIOS = useFrameProcessor(
-    //   (frame) => {
-    //     'worklet';
-    //     runOnJs(detectFaces(frame), frame);
-    //     // runAsync(frame, () => {
-    //     //   'worklet';
-    //     //   runOnJs(detectFaces(frame), frame);
-    //     // });
-    //   },
-    //   [runOnJs]
-    // );
+    // const cameraFrameProcessor = useFrameProcessor( ( frame ) => {
+    //   'worklet'
+    //   runAsync( frame, () => {
+    //     'worklet'
+    //     runOnJs(
+    //       detectFaces( frame ),
+    //       frame
+    //     )
+    //   } )
+    // }, [ runOnJs ] )
 
     return (
       <VisionCamera
         ref={ref}
-        // frameProcessor={
-        //   Platform.OS === 'android' ? processorAndroid : processorIOS
-        // }
-        frameProcessor={processorAndroid}
+        frameProcessor={frameProcessor}
         pixelFormat={Platform.OS === 'android' ? 'yuv' : 'rgb'}
         {...props}
       />

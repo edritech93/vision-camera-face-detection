@@ -6,6 +6,7 @@ import {
   View,
   ActivityIndicator,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import {
   type Frame,
@@ -35,6 +36,8 @@ import { getPermissionReadStorage } from './permission';
 
 export default function App() {
   const { hasPermission, requestPermission } = useCameraPermission();
+  const { width: widthScreen, height: heightScreen } = useWindowDimensions();
+
   const [cameraMounted, setCameraMounted] = useState<boolean>(false);
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
   const [autoScale, setAutoScale] = useState<boolean>(true);
@@ -47,6 +50,8 @@ export default function App() {
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     performanceMode: 'fast',
     classificationMode: 'all',
+    windowWidth: widthScreen,
+    windowHeight: heightScreen,
   }).current;
   const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
   //
@@ -205,12 +210,11 @@ export default function App() {
                   device={cameraDevice}
                   onError={handleCameraMountError}
                   faceDetectionCallback={handleFacesDetected}
-                  outputOrientation={'device'}
                   onUIRotationChanged={handleUiRotation}
                   faceDetectionOptions={{
                     ...faceDetectionOptions,
-                    autoScale,
-                    enableTensor,
+                    autoMode: true,
+                    enableTensor: enableTensor,
                   }}
                 />
                 <Animated.View style={animatedStyle}>
