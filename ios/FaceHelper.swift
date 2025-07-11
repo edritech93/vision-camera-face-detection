@@ -16,85 +16,6 @@ let inputHeight = 112
 var interpreter: Interpreter? = nil
 
 class FaceHelper {
-    // static func processContours(from face: Face) -> [String:[[String:CGFloat]]] {
-    //     let faceContoursTypes = [
-    //         FaceContourType.face,
-    //         FaceContourType.leftEyebrowTop,
-    //         FaceContourType.leftEyebrowBottom,
-    //         FaceContourType.rightEyebrowTop,
-    //         FaceContourType.rightEyebrowBottom,
-    //         FaceContourType.leftEye,
-    //         FaceContourType.rightEye,
-    //         FaceContourType.upperLipTop,
-    //         FaceContourType.upperLipBottom,
-    //         FaceContourType.lowerLipTop,
-    //         FaceContourType.lowerLipBottom,
-    //         FaceContourType.noseBridge,
-    //         FaceContourType.noseBottom,
-    //         FaceContourType.leftCheek,
-    //         FaceContourType.rightCheek,
-    //     ]
-    
-    //     let faceContoursTypesStrings = [
-    //         "FACE",
-    //         "LEFT_EYEBROW_TOP",
-    //         "LEFT_EYEBROW_BOTTOM",
-    //         "RIGHT_EYEBROW_TOP",
-    //         "RIGHT_EYEBROW_BOTTOM",
-    //         "LEFT_EYE",
-    //         "RIGHT_EYE",
-    //         "UPPER_LIP_TOP",
-    //         "UPPER_LIP_BOTTOM",
-    //         "LOWER_LIP_TOP",
-    //         "LOWER_LIP_BOTTOM",
-    //         "NOSE_BRIDGE",
-    //         "NOSE_BOTTOM",
-    //         "LEFT_CHEEK",
-    //         "RIGHT_CHEEK",
-    //     ];
-    
-    //     var faceContoursTypesMap: [String:[[String:CGFloat]]] = [:]
-    
-    //     for i in 0..<faceContoursTypes.count {
-    //         let contour = face.contour(ofType: faceContoursTypes[i]);
-    
-    //         var pointsArray: [[String:CGFloat]] = []
-    
-    //         if let points = contour?.points {
-    //             for point in points {
-    //                 let currentPointsMap = [
-    //                     "x": point.x,
-    //                     "y": point.y,
-    //                 ]
-    
-    //                 pointsArray.append(currentPointsMap)
-    //             }
-    
-    //             faceContoursTypesMap[faceContoursTypesStrings[i]] = pointsArray
-    //         }
-    //     }
-    
-    //     return faceContoursTypesMap
-    // }
-    
-    // static func processBoundingBox(from face: Face) -> [String:Any] {
-    //     let frameRect = face.frame
-    
-    //     let offsetX = (frameRect.midX - ceil(frameRect.width)) / 2.0
-    //     let offsetY = (frameRect.midY - ceil(frameRect.height)) / 2.0
-    
-    //     let x = frameRect.maxX + offsetX
-    //     let y = frameRect.minY + offsetY
-    
-    //     return [
-    //         "x": frameRect.midX + (frameRect.midX - x),
-    //         "y": frameRect.midY + (y - frameRect.midY),
-    //         "width": frameRect.width,
-    //         "height": frameRect.height,
-    //         "boundingCenterX": frameRect.midX,
-    //         "boundingCenterY": frameRect.midY
-    //     ]
-    // }
     
     static func getImageFaceFromUIImage(from image: UIImage, rectImage: CGRect) -> UIImage? {
         let imageRef: CGImage = (image.cgImage?.cropping(to: rectImage)!)!
@@ -211,34 +132,106 @@ class FaceHelper {
         }
     }
     
-    //    static func getDataFromPixel(pixelBuffer: CVPixelBuffer) -> Data {
-    //        CVPixelBufferLockBaseAddress(pixelBuffer, [.readOnly])
-    //        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, [.readOnly]) }
-    //
-    //        // Calculate sum of planes' size
-    //        var totalSize = 0
-    //        for plane in 0 ..< CVPixelBufferGetPlaneCount(pixelBuffer) {
-    //            let height      = CVPixelBufferGetHeightOfPlane(pixelBuffer, plane)
-    //            let bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, plane)
-    //            let planeSize   = height * bytesPerRow
-    //            totalSize += planeSize
-    //        }
-    //
-    //        guard let rawFrame = malloc(totalSize) else { fatalError() }
-    //        var dest = rawFrame
-    //
-    //        for plane in 0 ..< CVPixelBufferGetPlaneCount(pixelBuffer) {
-    //            let source      = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, plane)
-    //            let height      = CVPixelBufferGetHeightOfPlane(pixelBuffer, plane)
-    //            let bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, plane)
-    //            let planeSize   = height * bytesPerRow
-    //
-    //            memcpy(dest, source, planeSize)
-    //            dest += planeSize
-    //        }
-    //
-    //        return Data(bytesNoCopy: rawFrame, count: totalSize, deallocator: .free)
-    //    }
+  static func rgbDataFromFaceInSampleBuffer(buffer: CMSampleBuffer,  faceRect: CGRect) -> Data? {
+    let inputSize = CGSize(width: inputWidth, height: inputHeight)
+    // Ambil CVPixelBuffer dari CMSampleBuffer
+    guard let pixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
+      print("Failed to get image buffer from sampleBuffer")
+      return nil
+    }
+    
+    // Convert CVPixelBuffer to CIImage
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+    
+    // Crop wajah (faceRect dalam koordinat image)
+    let croppedImage = ciImage.cropped(to: faceRect)
+    
+    // Resize hasil crop ke ukuran input model
+    let scaleX = inputSize.width / faceRect.width
+    let scaleY = inputSize.height / faceRect.height
+    let resizedImage = croppedImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
+    
+    // Buat buffer baru untuk hasil resize
+    var resizedBuffer: CVPixelBuffer?
+    let attrs = [
+      kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue!,
+      kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue!
+    ] as CFDictionary
+    
+    let status = CVPixelBufferCreate(
+      kCFAllocatorDefault,
+      Int(inputSize.width),
+      Int(inputSize.height),
+      kCVPixelFormatType_32BGRA,
+      attrs,
+      &resizedBuffer
+    )
+    
+    guard status == kCVReturnSuccess, let finalBuffer = resizedBuffer else {
+      print("Failed to create resized pixel buffer")
+      return nil
+    }
+    
+    // Render hasil CIImage ke buffer baru
+    let context = CIContext()
+    context.render(resizedImage, to: finalBuffer)
+    
+    // NOTE - code from rgbDataFromBuffer
+    CVPixelBufferLockBaseAddress(finalBuffer, .readOnly)
+    defer {
+      CVPixelBufferUnlockBaseAddress(finalBuffer, .readOnly)
+    }
+    guard let sourceData = CVPixelBufferGetBaseAddress(finalBuffer) else {
+      return nil
+    }
+    
+    let width = CVPixelBufferGetWidth(finalBuffer)
+    let height = CVPixelBufferGetHeight(finalBuffer)
+    let sourceBytesPerRow = CVPixelBufferGetBytesPerRow(finalBuffer)
+    let destinationChannelCount = 3
+    let destinationBytesPerRow = destinationChannelCount * width
+    
+    var sourceBuffer = vImage_Buffer(data: sourceData,
+                                     height: vImagePixelCount(height),
+                                     width: vImagePixelCount(width),
+                                     rowBytes: sourceBytesPerRow)
+    
+    guard let destinationData = malloc(height * destinationBytesPerRow) else {
+      print("Error: out of memory")
+      return nil
+    }
+    
+    defer {
+      free(destinationData)
+    }
+    
+    var destinationBuffer = vImage_Buffer(data: destinationData,
+                                          height: vImagePixelCount(height),
+                                          width: vImagePixelCount(width),
+                                          rowBytes: destinationBytesPerRow)
+    
+    let pixelBufferFormat = CVPixelBufferGetPixelFormatType(finalBuffer)
+    
+    switch (pixelBufferFormat) {
+    case kCVPixelFormatType_32BGRA:
+      vImageConvert_BGRA8888toRGB888(&sourceBuffer, &destinationBuffer, UInt32(kvImageNoFlags))
+    case kCVPixelFormatType_32ARGB:
+      vImageConvert_ARGB8888toRGB888(&sourceBuffer, &destinationBuffer, UInt32(kvImageNoFlags))
+    case kCVPixelFormatType_32RGBA:
+      vImageConvert_RGBA8888toRGB888(&sourceBuffer, &destinationBuffer, UInt32(kvImageNoFlags))
+    default:
+      // Unknown pixel format.
+      return nil
+    }
+    
+    let byteData = Data(bytes: destinationBuffer.data, count: destinationBuffer.rowBytes * height)
+    let bytes = Array<UInt8>(unsafeData: byteData)!
+    var floats = [Float]()
+    for i in 0..<bytes.count {
+      floats.append(Float(bytes[i]) / 255.0)
+    }
+    return Data(copyingBufferOf: floats)
+  }
 }
 
 // MARK: - Extensions
