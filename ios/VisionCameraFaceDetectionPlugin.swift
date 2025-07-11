@@ -27,19 +27,19 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
   private var cameraFacing:AVCaptureDevice.Position = .front
   private var orientationManager = VisionCameraFaceDetectorOrientation()
   private var enableTensor = false
-
+  
   public override init(
-    proxy: VisionCameraProxyHolder, 
+    proxy: VisionCameraProxyHolder,
     options: [AnyHashable : Any]! = [:]
   ) {
     super.init(proxy: proxy, options: options)
     let config = getConfig(withArguments: options)
-
+    
     let windowWidthParam = config?["windowWidth"] as? Double
     if windowWidthParam != nil && windowWidthParam != windowWidth {
       windowWidth = CGFloat(windowWidthParam!)
     }
-
+    
     let windowHeightParam = config?["windowHeight"] as? Double
     if windowHeightParam != nil && windowHeightParam != windowHeight {
       windowHeight = CGFloat(windowHeightParam!)
@@ -48,53 +48,53 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
     if config?["cameraFacing"] as? String == "back" {
       cameraFacing = .back
     }
-
+    
     // handle auto scaling and rotation
     autoMode = config?["autoMode"] as? Bool == true
     enableTensor = config?["enableTensor"] as? Bool == true
-
+    
     // initializes faceDetector on creation
     let minFaceSize = 0.15
     let optionsBuilder = FaceDetectorOptions()
-        optionsBuilder.performanceMode = .fast
-        optionsBuilder.landmarkMode = .none
-        optionsBuilder.contourMode = .none
-        optionsBuilder.classificationMode = .none
-        optionsBuilder.minFaceSize = minFaceSize
-        optionsBuilder.isTrackingEnabled = false
-
+    optionsBuilder.performanceMode = .fast
+    optionsBuilder.landmarkMode = .none
+    optionsBuilder.contourMode = .none
+    optionsBuilder.classificationMode = .none
+    optionsBuilder.minFaceSize = minFaceSize
+    optionsBuilder.isTrackingEnabled = false
+    
     if config?["performanceMode"] as? String == "accurate" {
       optionsBuilder.performanceMode = .accurate
     }
-
+    
     if config?["landmarkMode"] as? String == "all" {
       runLandmarks = true
       optionsBuilder.landmarkMode = .all
     }
-
+    
     if config?["classificationMode"] as? String == "all" {
       runClassifications = true
       optionsBuilder.classificationMode = .all
     }
-
+    
     if config?["contourMode"] as? String == "all" {
       runContours = true
       optionsBuilder.contourMode = .all
     }
-
+    
     let minFaceSizeParam = config?["minFaceSize"] as? Double
     if minFaceSizeParam != nil && minFaceSizeParam != minFaceSize {
       optionsBuilder.minFaceSize = CGFloat(minFaceSizeParam!)
     }
-
+    
     if config?["trackingEnabled"] as? Bool == true {
       trackingEnabled = true
       optionsBuilder.isTrackingEnabled = true
     }
-
+    
     faceDetector = FaceDetector.faceDetector(options: optionsBuilder)
   }
-
+  
   func getConfig(
     withArguments arguments: [AnyHashable: Any]!
   ) -> [String:Any]! {
@@ -104,13 +104,13 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
           (key as? String ?? "", value)
         })
       }
-
+      
       return config
     }
-
+    
     return nil
   }
-
+  
   func processBoundingBox(
     from face: Face,
     sourceWidth: CGFloat,
@@ -141,7 +141,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       "y": x
     ]
   }
-
+  
   func processLandmarks(
     from face: Face,
     scaleX: CGFloat,
@@ -159,7 +159,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       FaceLandmarkType.rightEar,
       FaceLandmarkType.rightEye
     ]
-
+    
     let faceLandmarksTypesStrings = [
       "LEFT_CHEEK",
       "LEFT_EAR",
@@ -172,7 +172,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       "RIGHT_EAR",
       "RIGHT_EYE"
     ];
-
+    
     var faceLandMarksTypesMap: [String: [String: CGFloat?]] = [:]
     for i in 0..<faceLandmarkTypes.count {
       let landmark = face.landmark(ofType: faceLandmarkTypes[i]);
@@ -182,10 +182,10 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       ]
       faceLandMarksTypesMap[faceLandmarksTypesStrings[i]] = position
     }
-
+    
     return faceLandMarksTypesMap
   }
-
+  
   func processFaceContours(
     from face: Face,
     scaleX: CGFloat,
@@ -208,7 +208,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       FaceContourType.upperLipBottom,
       FaceContourType.upperLipTop
     ]
-
+    
     let faceContoursTypesStrings = [
       "FACE",
       "LEFT_CHEEK",
@@ -226,57 +226,57 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       "UPPER_LIP_BOTTOM",
       "UPPER_LIP_TOP"
     ];
-
+    
     var faceContoursTypesMap: [String:[[String:CGFloat]]] = [:]
     for i in 0..<faceContoursTypes.count {
       let contour = face.contour(ofType: faceContoursTypes[i]);
       var pointsArray: [[String:CGFloat]] = []
-
+      
       if let points = contour?.points {
         for point in points {
           let currentPointsMap = [
             "x": point.x * scaleX,
             "y": point.y * scaleY,
           ]
-
+          
           pointsArray.append(currentPointsMap)
         }
-
+        
         faceContoursTypesMap[faceContoursTypesStrings[i]] = pointsArray
       }
     }
-
+    
     return faceContoursTypesMap
   }
-
+  
   func getImageOrientation() -> UIImage.Orientation {
     switch orientationManager.orientation {
-      case .portrait:
-        return cameraFacing == .front ? .leftMirrored : .right
-      case .landscapeLeft:
-        return cameraFacing == .front ? .upMirrored : .up
-      case .portraitUpsideDown:
-        return cameraFacing == .front ? .rightMirrored : .left
-      case .landscapeRight:
-        return cameraFacing == .front ? .downMirrored : .down
-      @unknown default:
-        return .up
+    case .portrait:
+      return cameraFacing == .front ? .leftMirrored : .right
+    case .landscapeLeft:
+      return cameraFacing == .front ? .upMirrored : .up
+    case .portraitUpsideDown:
+      return cameraFacing == .front ? .rightMirrored : .left
+    case .landscapeRight:
+      return cameraFacing == .front ? .downMirrored : .down
+    @unknown default:
+      return .up
     }
   }
   
   public override func callback(
-    _ frame: Frame, 
+    _ frame: Frame,
     withArguments arguments: [AnyHashable: Any]?
   ) -> Any? {
     var result: [Any] = []
-
+    
     do {
       // we need to invert sizes as frame is always -90deg rotated
       let width = CGFloat(frame.height)
       let height = CGFloat(frame.width)
       let image = VisionImage(buffer: frame.buffer)
       image.orientation = getImageOrientation()
-    
+      
       var scaleX:CGFloat
       var scaleY:CGFloat
       if (autoMode) {
@@ -286,35 +286,31 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
         scaleX = CGFloat(1)
         scaleY = CGFloat(1)
       }
-
+      
       let faces: [Face] = try faceDetector!.results(in: image)
       for face in faces {
         var map: [String: Any] = [:]
         if enableTensor {
-            guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: image.orientation) else {
-                return nil
-            }
-            guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
-                return nil
-            }
-            guard let rgbData = FaceHelper.rgbDataFromBuffer(pixelBuffer) else {
-                return nil
-            }
-
-            try interpreter?.copy(rgbData, toInputAt: 0)
-            try interpreter?.invoke()
-            let outputTensor: Tensor? = try interpreter?.output(at: 0)
-            
-            if ((outputTensor?.data) != nil) {
-                let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
-                map["data"] = result
-            } else {
-                map["data"] = []
-            }
-        } else {
+          guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: image.orientation) else {
+            return nil
+          }
+          guard let rgbData = FaceHelper.rgbDataFromBuffer(imageCrop) else {
+            return nil
+          }
+          try interpreter?.copy(rgbData, toInputAt: 0)
+          try interpreter?.invoke()
+          let outputTensor: Tensor? = try interpreter?.output(at: 0)
+          
+          if ((outputTensor?.data) != nil) {
+            let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
+            map["data"] = result
+          } else {
             map["data"] = []
+          }
+        } else {
+          map["data"] = []
         }
-
+        
         if runLandmarks {
           map["landmarks"] = processLandmarks(
             from: face,
@@ -322,13 +318,13 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
             scaleY: scaleY
           )
         }
-
+        
         if runClassifications {
           map["leftEyeOpenProbability"] = face.leftEyeOpenProbability
           map["rightEyeOpenProbability"] = face.rightEyeOpenProbability
           map["smilingProbability"] = face.smilingProbability
         }
-
+        
         if runContours {
           map["contours"] = processFaceContours(
             from: face,
@@ -336,11 +332,11 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
             scaleY: scaleY
           )
         }
-
+        
         if trackingEnabled {
           map["trackingId"] = face.trackingID
         }
-
+        
         map["rollAngle"] = face.headEulerAngleZ
         map["pitchAngle"] = face.headEulerAngleX
         map["yawAngle"] = face.headEulerAngleY
@@ -351,13 +347,13 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
           scaleX: scaleX,
           scaleY: scaleY
         )
-
+        
         result.append(map)
       }
     } catch let error {
       print("Error processing face detection: \(error)")
     }
-
+    
     return result
   }
 }
