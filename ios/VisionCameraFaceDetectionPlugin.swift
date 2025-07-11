@@ -294,16 +294,9 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
           guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: image.orientation) else {
             return nil
           }
-          guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
+          guard let rgbData = FaceHelper.rgbDataFromBuffer(imageCrop) else {
             return nil
           }
-          guard let rgbData = FaceHelper.rgbDataFromBuffer(pixelBuffer) else {
-            return nil
-          }
-          //          guard let rgbData = FaceHelper.rgbDataFromFaceInSampleBuffer(buffer: frame.buffer, faceRect: face.frame) else {
-          //            return nil
-          //          }
-          print("rgbData: \(rgbData)")
           try interpreter?.copy(rgbData, toInputAt: 0)
           try interpreter?.invoke()
           let outputTensor: Tensor? = try interpreter?.output(at: 0)

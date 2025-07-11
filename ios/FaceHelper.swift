@@ -110,25 +110,16 @@ class FaceHelper {
     return pixelBuffer
   }
   
-  static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer?, rectImage: CGRect, orientation: UIImage.Orientation) -> UIImage? {
-    guard let sampleBuffer = sampleBuffer else {
-      print("Sample buffer is NULL.")
-      return nil
-    }
-    guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-      print("Invalid sample buffer.")
-      return nil
-    }
-    let ciimage = CIImage(cvPixelBuffer: imageBuffer)
-    let context = CIContext(options: nil)
-    let cgImage = context.createCGImage(ciimage, from: ciimage.extent)!
-    
-    if (!rectImage.isNull) {
+  static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer, rectImage: CGRect, orientation: UIImage.Orientation) -> CVPixelBuffer? {
+    autoreleasepool {
+      let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+      let ciimage = CIImage(cvPixelBuffer: imageBuffer!)
+      let context = CIContext(options: nil)
+      let cgImage = context.createCGImage(ciimage, from: ciimage.extent)!
+      
       let imageRef: CGImage = cgImage.cropping(to: rectImage)!
       let imageCrop: UIImage = UIImage(cgImage: imageRef, scale: 0.5, orientation: orientation)
-      return imageCrop
-    } else {
-      return nil
+      return uiImageToPixelBuffer(image: imageCrop, size: inputWidth)
     }
   }
 }
