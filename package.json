@@ -1,6 +1,6 @@
 {
   "name": "vision-camera-face-detection",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Plugin Face Detection for Vision Camera 4",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",

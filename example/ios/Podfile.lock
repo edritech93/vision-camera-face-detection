@@ -1773,7 +1773,7 @@ PODS:
   - VisionCamera/React (4.7.0):
     - React-Core
     - VisionCamera/FrameProcessors
-  - VisionCameraFaceDetection (2.2.1):
+  - VisionCameraFaceDetection (2.2.2):
     - DoubleConversion
     - glog
     - GoogleMLKit/FaceDetection (= 7.0.0)
@@ -2124,7 +2124,7 @@ SPEC CHECKSUMS:
   TensorFlowLiteC: 8a8cb6fa20ad74dff29b5e490d02c36a14d48148
   TensorFlowLiteSwift: 1a5cd776a377f8d7a009b16f5904fdf91a8debfa
   VisionCamera: 5e6f1556fed809a93c70f657cab531e01e618bae
-  VisionCameraFaceDetection: 7faa029b652ff40e9a3c87d72c4366cb109cc109
+  VisionCameraFaceDetection: 47e3be4a38da0be93132d635d9a992584050c6e6
   Yoga: 66a9fd80007d5d5fce19d1676ce17b4d5e16e9b1
 
 PODFILE CHECKSUM: 7cb0d072b5ab1d86f23eb2af1fc15955485ddfe8
