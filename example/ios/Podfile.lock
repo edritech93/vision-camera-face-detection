@@ -1305,7 +1305,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-worklets-core (1.6.0):
+  - react-native-worklets-core (1.6.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1613,7 +1613,7 @@ PODS:
     - React-logger (= 0.78.3)
     - React-perflogger (= 0.78.3)
     - React-utils (= 0.78.3)
-  - RNPermissions (5.4.1):
+  - RNPermissions (5.4.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1634,32 +1634,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNReanimated (3.18.0):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 3.18.0)
-    - RNReanimated/worklets (= 3.18.0)
-    - Yoga
-  - RNReanimated/reanimated (3.18.0):
+  - RNReanimated (3.19.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1681,9 +1656,34 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated/apple (= 3.18.0)
+    - RNReanimated/reanimated (= 3.19.1)
+    - RNReanimated/worklets (= 3.19.1)
     - Yoga
-  - RNReanimated/reanimated/apple (3.18.0):
+  - RNReanimated/reanimated (3.19.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNReanimated/reanimated/apple (= 3.19.1)
+    - Yoga
+  - RNReanimated/reanimated/apple (3.19.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1706,7 +1706,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNReanimated/worklets (3.18.0):
+  - RNReanimated/worklets (3.19.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1728,9 +1728,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/worklets/apple (= 3.18.0)
+    - RNReanimated/worklets/apple (= 3.19.1)
     - Yoga
-  - RNReanimated/worklets/apple (3.18.0):
+  - RNReanimated/worklets/apple (3.19.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1761,16 +1761,16 @@ PODS:
     - TensorFlowLiteSwift/Core (= 2.11.0)
   - TensorFlowLiteSwift/Core (2.11.0):
     - TensorFlowLiteC (= 2.11.0)
-  - VisionCamera (4.7.0):
-    - VisionCamera/Core (= 4.7.0)
-    - VisionCamera/FrameProcessors (= 4.7.0)
-    - VisionCamera/React (= 4.7.0)
-  - VisionCamera/Core (4.7.0)
-  - VisionCamera/FrameProcessors (4.7.0):
+  - VisionCamera (4.7.1):
+    - VisionCamera/Core (= 4.7.1)
+    - VisionCamera/FrameProcessors (= 4.7.1)
+    - VisionCamera/React (= 4.7.1)
+  - VisionCamera/Core (4.7.1)
+  - VisionCamera/FrameProcessors (4.7.1):
     - React
     - React-callinvoker
     - react-native-worklets-core
-  - VisionCamera/React (4.7.0):
+  - VisionCamera/React (4.7.1):
     - React-Core
     - VisionCamera/FrameProcessors
   - VisionCameraFaceDetection (2.2.2):
@@ -2089,7 +2089,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 57bea44149376ecf1241dd9f02a6222adab43e57
   React-microtasksnativemodule: 2739fc8a8cb99486820c933ce560791c93be5337
   react-native-image-picker: 3a03f96b11ef2b727d3d58a7ed009900b0a56a52
-  react-native-worklets-core: ccd0e4be6baa2ca00317a9cd62f2c5df65f10ec9
+  react-native-worklets-core: f72d7f725211357c0466edb15c62ee35595e4163
   React-NativeModulesApple: 4849912ee050e6ae346f5789bd631570580d8b84
   React-perflogger: 069d41f741187be92ed46c6ac67add03b99f3166
   React-performancetimeline: eda794c5007eb6834e13bc6026a879b5f6d49c74
@@ -2118,12 +2118,12 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: ad88c80e06f29900f2e6f9ccf1d4cb0bfc3e1bbc
   ReactCodegen: 69c7aec61821e1860aaaf959189218ecca40e811
   ReactCommon: ef3e394efce4b78e9214587689c459cf82927368
-  RNPermissions: f25d7a4a74d6bd7ba325a6f5bddda42b7e5dc879
-  RNReanimated: 54fbd14d2d88e242e8f8ad46376db0c78ae88bd1
+  RNPermissions: a441d86ab370609ba6eae5815c0f558fe1c534ad
+  RNReanimated: 538641c029de8054fea09484386c95b4e74e2eff
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   TensorFlowLiteC: 8a8cb6fa20ad74dff29b5e490d02c36a14d48148
   TensorFlowLiteSwift: 1a5cd776a377f8d7a009b16f5904fdf91a8debfa
-  VisionCamera: 5e6f1556fed809a93c70f657cab531e01e618bae
+  VisionCamera: d785f2775f8b200d713f6e74b6ebdee2b8c8cb5c
   VisionCameraFaceDetection: 47e3be4a38da0be93132d635d9a992584050c6e6
   Yoga: 66a9fd80007d5d5fce19d1676ce17b4d5e16e9b1
 

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Image,
   useWindowDimensions,
+  Alert,
 } from 'react-native';
 import {
   type Frame,
@@ -28,6 +29,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {
+  type Asset,
   type ImageLibraryOptions,
   type ImagePickerResponse,
   launchImageLibrary,
@@ -161,39 +163,53 @@ export default function App() {
   }
 
   async function _pickImageSample() {
-    await getPermissionReadStorage().catch((error) => {
-      console.log(error);
-      return;
-    });
-    setLoadingSample(true);
-    const options: ImageLibraryOptions = {
-      mediaType: 'photo',
-      includeBase64: true,
-    };
-    launchImageLibrary(options)
-      .then((response: ImagePickerResponse) => {
-        if (response && response.assets && response.assets.length > 0) {
-          const base64: string = response.assets[0]?.base64 ?? '';
-          detectFromBase64(base64)
-            .then((result: DetectBas64Type) => {
-              const arrayRes: number[] = result.data.map((e: number) => {
-                const stringFixed: string = e.toFixed(5);
-                return parseFloat(stringFixed);
-              });
-              setDataSample(arrayRes);
-              setImageSample(result.base64);
-              console.log('Load Sample Successfully');
-            })
-            .catch((error: Error) => {
-              console.log(error);
-            })
-            .finally(() => setLoadingSample(false));
-        }
-      })
-      .catch((error) => {
+    try {
+      await getPermissionReadStorage().catch((error) => {
         console.log(error);
-        setLoadingSample(false);
+        return;
       });
+      setLoadingSample(true);
+      const options: ImageLibraryOptions = {
+        mediaType: 'photo',
+        selectionLimit: 1,
+        includeBase64: true,
+      };
+      const response: ImagePickerResponse = await launchImageLibrary(options);
+      if (!response.assets) {
+        throw { message: 'Invalid Attachment' };
+      }
+      const dataAsset: Asset[] = response.assets;
+      if (dataAsset.length === 0) {
+        throw { message: 'No Attachment' };
+      }
+      const itemAsset = dataAsset[0];
+      if (!itemAsset?.uri) {
+        throw { message: 'Invalid URI' };
+      }
+      const imageFull = itemAsset.base64 ?? '';
+      const imageFace: DetectBas64Type = await detectFromBase64(
+        imageFull
+      ).catch((error) => {
+        throw error;
+      });
+      if (imageFace.base64.length === 0) {
+        throw { message: 'No Face detected!' };
+      }
+      const arrayRes: number[] = imageFace.data.map((e: number) => {
+        const stringFixed: string = e.toFixed(5);
+        return parseFloat(stringFixed);
+      });
+      setDataSample(arrayRes);
+      setImageSample(imageFace.base64);
+      console.log('Load Sample Successfully');
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Error', JSON.stringify(error));
+      setDataSample([]);
+      setImageSample('');
+    } finally {
+      setLoadingSample(false);
+    }
   }
 
   return (

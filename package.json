@@ -80,8 +80,8 @@
     "react": "19.0.0",
     "react-native": "0.78.3",
     "react-native-builder-bob": "^0.36.0",
-    "react-native-vision-camera": "^4.7.0",
-    "react-native-worklets-core": "^1.6.0",
+    "react-native-vision-camera": "^4.7.1",
+    "react-native-worklets-core": "^1.6.2",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.2.2"
