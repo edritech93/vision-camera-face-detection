@@ -32,4 +32,7 @@ export type DetectBas64Type = {
   base64: string;
   data: any;
   message: string;
+  leftEyeOpenProbability: number;
+  rightEyeOpenProbability: number;
+  smilingProbability: number;
 };

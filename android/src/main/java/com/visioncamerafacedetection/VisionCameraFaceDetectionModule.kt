@@ -95,11 +95,17 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
         map.putString("message", "Successfully Get Face")
         map.putArray("data", arrayData)
         map.putString("base64", FaceHelper().getBase64Image(bmpFaceStorage))
+        map.putDouble("leftEyeOpenProbability", face.leftEyeOpenProbability?.toDouble() ?: 0.0)
+        map.putDouble("rightEyeOpenProbability", face.rightEyeOpenProbability?.toDouble() ?: 0.0)
+        map.putDouble("smilingProbability", face.smilingProbability?.toDouble() ?: 0.0)
         promise.resolve(map)
       } else {
         map.putString("message", "No Face")
         map.putArray("data", Arguments.createArray())
         map.putString("base64", "")
+        map.putDouble("leftEyeOpenProbability", 0.0)
+        map.putDouble("rightEyeOpenProbability", 0.0)
+        map.putDouble("smilingProbability", 0.0)
         promise.resolve(map)
       }
     } catch (e: Exception) {

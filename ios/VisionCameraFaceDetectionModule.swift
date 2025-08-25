@@ -79,17 +79,26 @@ class VisionCameraFaceDetectionModule: NSObject {
                     map["message"] = "Successfully Get Face"
                     map["data"] = result
                     map["base64"] = FaceHelper.convertImageToBase64(image: imageCrop)
+                    map["leftEyeOpenProbability"] = face?.leftEyeOpenProbability ?? 0.0
+                    map["rightEyeOpenProbability"] = face?.rightEyeOpenProbability ?? 0.0
+                    map["smilingProbability"] = face?.smilingProbability ?? 0.0
                     resolve(map)
                 } else {
                     map["message"] = "No Face"
                     map["data"] = []
                     map["base64"] = ""
+                    map["leftEyeOpenProbability"] = 0.0
+                    map["rightEyeOpenProbability"] = 0.0
+                    map["smilingProbability"] = 0.0
                     resolve(map)
                 }
             } else {
                 map["message"] = "No Face"
                 map["data"] = []
                 map["base64"] = ""
+                map["leftEyeOpenProbability"] = 0.0
+                map["rightEyeOpenProbability"] = 0.0
+                map["smilingProbability"] = 0.0
                 resolve(map)
             }
         } catch {
