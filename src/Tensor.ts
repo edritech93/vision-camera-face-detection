@@ -1,31 +1,17 @@
-import { NativeModules, Platform } from 'react-native';
+import { NitroModules } from 'react-native-nitro-modules';
+import type { VisionCameraFaceDetection } from './VisionCameraFaceDetection.nitro';
 
-const LINKING_ERROR =
-  `The package 'vision-camera-face-detection' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+const VisionCameraFaceDetectionHybridObject =
+  NitroModules.createHybridObject<VisionCameraFaceDetection>('VisionCameraFaceDetection');
 
-const VisionCameraFaceDetectionModule =
-  NativeModules.VisionCameraFaceDetectionModule
-    ? NativeModules.VisionCameraFaceDetectionModule
-    : new Proxy(
-        {},
-        {
-          get() {
-            throw new Error(LINKING_ERROR);
-          },
-        }
-      );
-
-export function initTensor(modelPath: string, count?: number): Promise<string> {
-  return VisionCameraFaceDetectionModule.initTensor(modelPath, count);
+export function initTensor(modelPath: string, count?: number): string {
+  return VisionCameraFaceDetectionHybridObject.initTensor(modelPath, count);
 }
 
 export function detectFromBase64(
   imageString: string
-): Promise<DetectBas64Type> {
-  return VisionCameraFaceDetectionModule.detectFromBase64(imageString);
+): DetectBas64Type {
+  return VisionCameraFaceDetectionHybridObject.detectFromBase64(imageString);
 }
 
 export type DetectBas64Type = {

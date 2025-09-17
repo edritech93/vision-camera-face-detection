@@ -1,4 +1,4 @@
-package com.visioncamerafacedetection
+package com.margelo.nitro.visioncamerafacedetection
 
 import android.content.Context
 import android.util.Log
