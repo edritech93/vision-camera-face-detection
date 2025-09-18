@@ -100,9 +100,8 @@ export default function App() {
   }, [hasPermission, requestPermission]);
 
   useEffect(() => {
-    initTensor('mobile_face_net', 1)
-      .then((response: any) => console.log(response))
-      .catch((error: any) => console.log(error));
+    const response = initTensor('mobile_face_net', 1);
+    console.log(response);
   }, []);
 
   /**
@@ -187,11 +186,7 @@ export default function App() {
         throw { message: 'Invalid URI' };
       }
       const imageFull = itemAsset.base64 ?? '';
-      const imageFace: DetectBas64Type = await detectFromBase64(
-        imageFull
-      ).catch((error) => {
-        throw error;
-      });
+      const imageFace: DetectBas64Type = detectFromBase64(imageFull);
       if (imageFace.base64.length === 0) {
         throw { message: 'No Face detected!' };
       }
