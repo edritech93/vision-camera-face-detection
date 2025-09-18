@@ -9,6 +9,7 @@ import android.util.Base64
 import androidx.core.graphics.createBitmap
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.google.android.gms.tasks.Tasks
@@ -24,7 +25,7 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
 @DoNotStrip
-class VisionCameraFaceDetection : HybridVisionCameraFaceDetectionSpec() {
+class VisionCameraFaceDetection(private val reactContext: ReactApplicationContext) : HybridVisionCameraFaceDetectionSpec() {
   private var faceDetectorOptions = FaceDetectorOptions.Builder()
     .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
     .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
@@ -39,7 +40,7 @@ class VisionCameraFaceDetection : HybridVisionCameraFaceDetectionSpec() {
       val assetManager = reactContext.assets
       val byteFile: MappedByteBuffer = loadModelFile(assetManager, modelPath)
       val options = Interpreter.Options()
-      options.numThreads = count
+      options.numThreads = count?.toInt() ?: 1
       interpreter = Interpreter(byteFile, options)
       interpreter?.allocateTensors()
       return "initialization tflite success"
@@ -59,7 +60,7 @@ class VisionCameraFaceDetection : HybridVisionCameraFaceDetectionSpec() {
     return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
   }
 
-  override fun detectFromBase64(imageString: String): String {
+  override fun detectFromBase64(imageString: String): DetectBas64Type {
     try {
       val decodedString = Base64.decode(imageString, Base64.DEFAULT)
       val bmpStorageResult = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
