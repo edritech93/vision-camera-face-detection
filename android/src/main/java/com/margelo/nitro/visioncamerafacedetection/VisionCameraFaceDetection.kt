@@ -8,10 +8,7 @@ import android.graphics.RectF
 import android.util.Base64
 import androidx.core.graphics.createBitmap
 import com.facebook.proguard.annotations.DoNotStrip
-import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.WritableNativeMap
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
@@ -25,7 +22,8 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
 @DoNotStrip
-class VisionCameraFaceDetection(private val reactContext: ReactApplicationContext) : HybridVisionCameraFaceDetectionSpec() {
+class VisionCameraFaceDetection(private val reactContext: ReactApplicationContext) :
+  HybridVisionCameraFaceDetectionSpec() {
   private var faceDetectorOptions = FaceDetectorOptions.Builder()
     .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
     .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
@@ -67,7 +65,7 @@ class VisionCameraFaceDetection(private val reactContext: ReactApplicationContex
       val image = InputImage.fromBitmap(bmpStorageResult, 0)
       val task = faceDetector.process(image)
       val faces = Tasks.await(task)
-      val map: WritableMap = WritableNativeMap()
+      var map: DetectBas64Type
       if (faces.isNotEmpty()) {
         val face = faces[0]
         val bmpFaceStorage =
@@ -83,29 +81,39 @@ class VisionCameraFaceDetection(private val reactContext: ReactApplicationContex
         val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceStorage)
         val output: FloatBuffer = FloatBuffer.allocate(192)
         interpreter?.run(input, output)
-        val arrayData = Arguments.createArray()
+        val arrayData: DoubleArray = doubleArrayOf()
         for (i: Float in output.array()) {
-          arrayData.pushDouble(i.toDouble())
+          arrayData.plus(i.toDouble())
         }
-        map.putString("message", "Successfully Get Face")
-        map.putArray("data", arrayData)
-        map.putString("base64", FaceHelper().getBase64Image(bmpFaceStorage))
-        map.putDouble("leftEyeOpenProbability", face.leftEyeOpenProbability?.toDouble() ?: 0.0)
-        map.putDouble("rightEyeOpenProbability", face.rightEyeOpenProbability?.toDouble() ?: 0.0)
-        map.putDouble("smilingProbability", face.smilingProbability?.toDouble() ?: 0.0)
-        return map
+        val base64Image = FaceHelper().getBase64Image(bmpFaceStorage)
+        return DetectBas64Type(
+          base64 = base64Image ?: "",
+          data = arrayData,
+          message = "Successfully Get Face",
+          leftEyeOpenProbability = face.leftEyeOpenProbability?.toDouble() ?: 0.0,
+          rightEyeOpenProbability = face.rightEyeOpenProbability?.toDouble() ?: 0.0,
+          smilingProbability = face.smilingProbability?.toDouble() ?: 0.0
+        )
       } else {
-        map.putString("message", "No Face")
-        map.putArray("data", Arguments.createArray())
-        map.putString("base64", "")
-        map.putDouble("leftEyeOpenProbability", 0.0)
-        map.putDouble("rightEyeOpenProbability", 0.0)
-        map.putDouble("smilingProbability", 0.0)
-        return map
+        return DetectBas64Type(
+          base64 = "",
+          data = doubleArrayOf(),
+          message = "No Face",
+          leftEyeOpenProbability = 0.0,
+          rightEyeOpenProbability = 0.0,
+          smilingProbability = 0.0
+        )
       }
     } catch (e: Exception) {
       e.printStackTrace()
-      return e.printStackTrace()
+      return DetectBas64Type(
+        base64 = "",
+        data = doubleArrayOf(),
+        message = e.printStackTrace().toString(),
+        leftEyeOpenProbability = 0.0,
+        rightEyeOpenProbability = 0.0,
+        smilingProbability = 0.0
+      )
     }
   }
 }

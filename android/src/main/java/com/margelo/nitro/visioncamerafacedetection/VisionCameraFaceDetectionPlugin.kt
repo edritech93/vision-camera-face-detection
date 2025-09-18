@@ -1,12 +1,12 @@
 package com.margelo.nitro.visioncamerafacedetection
 
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
 import android.view.Surface
+import androidx.core.graphics.createBitmap
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.common.internal.ImageConvertUtils
@@ -17,7 +17,6 @@ import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.face.FaceLandmark
 import com.mrousavy.camera.core.FrameInvalidError
-import com.mrousavy.camera.core.types.Orientation
 import com.mrousavy.camera.core.types.Position
 import com.mrousavy.camera.frameprocessors.Frame
 import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
@@ -26,6 +25,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
 private const val TAG = "FaceDetector"
+
 class VisionCameraFaceDetectionPlugin(
   proxy: VisionCameraProxy,
   options: Map<String, Any>?
@@ -118,10 +118,10 @@ class VisionCameraFaceDetectionPlugin(
     bounds["x"] = x * scaleX
     bounds["y"] = y * scaleY
 
-    if(!autoMode) return bounds
+    if (!autoMode) return bounds
 
     // using front camera
-    if(cameraFacing == Position.FRONT) {
+    if (cameraFacing == Position.FRONT) {
       when (orientationManager.orientation) {
         // device is portrait
         Surface.ROTATION_0 -> {
@@ -161,7 +161,7 @@ class VisionCameraFaceDetectionPlugin(
       }
       // device is upside down
       Surface.ROTATION_180 -> {
-        bounds["x"] =((-x * scaleX) + sourceWidth * scaleX) - width
+        bounds["x"] = ((-x * scaleX) + sourceWidth * scaleX) - width
         bounds["y"] = ((-y * scaleY) + sourceHeight * scaleY) - height
       }
       // device is landscape left
@@ -282,13 +282,13 @@ class VisionCameraFaceDetectionPlugin(
   private fun getImageOrientation(): Int {
     return when (orientationManager.orientation) {
       // device is portrait
-      Surface.ROTATION_0 -> if(cameraFacing == Position.FRONT) 270 else 90
+      Surface.ROTATION_0 -> if (cameraFacing == Position.FRONT) 270 else 90
       // device is landscape right
-      Surface.ROTATION_270 -> if(cameraFacing == Position.FRONT) 180 else 180
+      Surface.ROTATION_270 -> if (cameraFacing == Position.FRONT) 180 else 180
       // device is upside down
-      Surface.ROTATION_180 -> if(cameraFacing == Position.FRONT) 90 else 270
+      Surface.ROTATION_180 -> if (cameraFacing == Position.FRONT) 90 else 270
       // device is landscape left
-      Surface.ROTATION_90 -> if(cameraFacing == Position.FRONT) 0 else 0
+      Surface.ROTATION_90 -> if (cameraFacing == Position.FRONT) 0 else 0
       else -> 0
     }
   }
@@ -304,21 +304,17 @@ class VisionCameraFaceDetectionPlugin(
       // we need to invert sizes as frame is always -90deg rotated
       val width = image.height.toDouble()
       val height = image.width.toDouble()
-      val scaleX = if(autoMode) windowWidth / width else 1.0
-      val scaleY = if(autoMode) windowHeight / height else 1.0
+      val scaleX = if (autoMode) windowWidth / width else 1.0
+      val scaleY = if (autoMode) windowHeight / height else 1.0
       val task = faceDetector!!.process(image)
       val faces = Tasks.await(task)
-      faces.forEach{face ->
+      faces.forEach { face ->
         val map: MutableMap<String, Any> = HashMap()
         val arrayData: MutableList<Double> = ArrayList()
         if (enableTensor) {
           val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(image)
           val bmpFaceResult =
-            Bitmap.createBitmap(
-              TF_OD_API_INPUT_SIZE,
-              TF_OD_API_INPUT_SIZE,
-              Bitmap.Config.ARGB_8888
-            )
+            createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE)
           val faceBB = RectF(face.boundingBox)
           val cvFace = Canvas(bmpFaceResult)
           val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()

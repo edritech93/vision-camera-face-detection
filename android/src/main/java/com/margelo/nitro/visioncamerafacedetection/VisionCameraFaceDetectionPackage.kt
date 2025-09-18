@@ -7,18 +7,23 @@ import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.mrousavy.camera.frameprocessors.FrameProcessorPluginRegistry
 
 class VisionCameraFaceDetectionPackage : TurboReactPackage() {
-    override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
-        return null
-    }
+  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
+    return null
+  }
 
-    override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-        return ReactModuleInfoProvider { HashMap() }
-    }
+  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
+    return ReactModuleInfoProvider { HashMap() }
+  }
 
-    companion object {
-        init {
-            System.loadLibrary("visioncamerafacedetection")
-            FrameProcessorPluginRegistry.addFrameProcessorPlugin("detectFaces") { proxy, options -> VisionCameraFaceDetectionPlugin(proxy, options) }
-        }
+  companion object {
+    init {
+      System.loadLibrary("visioncamerafacedetection")
+      FrameProcessorPluginRegistry.addFrameProcessorPlugin("detectFaces") { proxy, options ->
+        VisionCameraFaceDetectionPlugin(
+          proxy,
+          options
+        )
+      }
     }
+  }
 }
