@@ -16,6 +16,8 @@ class VisionCameraFaceDetectionPackage : TurboReactPackage() {
   }
 
   companion object {
+    const val TAG_DEBUG = "edritech93"
+
     init {
       System.loadLibrary("visioncamerafacedetection")
       FrameProcessorPluginRegistry.addFrameProcessorPlugin("detectFaces") { proxy, options ->

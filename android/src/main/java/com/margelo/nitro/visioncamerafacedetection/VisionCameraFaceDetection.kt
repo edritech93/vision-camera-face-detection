@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.RectF
 import android.util.Base64
+import android.util.Log
 import androidx.core.graphics.createBitmap
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.ReactApplicationContext
@@ -13,6 +14,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.margelo.nitro.visioncamerafacedetection.VisionCameraFaceDetectionPackage.Companion.TAG_DEBUG
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.io.IOException
@@ -22,8 +24,8 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
 @DoNotStrip
-class VisionCameraFaceDetection(private val reactContext: ReactApplicationContext) :
-  HybridVisionCameraFaceDetectionSpec() {
+class VisionCameraFaceDetection( private val reactContext: ReactApplicationContext) : HybridVisionCameraFaceDetectionSpec() {
+
   private var faceDetectorOptions = FaceDetectorOptions.Builder()
     .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
     .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
@@ -35,7 +37,9 @@ class VisionCameraFaceDetection(private val reactContext: ReactApplicationContex
 
   override fun initTensor(modelPath: String, count: Double?): String {
     try {
+      Log.e(TAG_DEBUG, "Start Debug")
       val assetManager = reactContext.assets
+      Log.e(TAG_DEBUG, assetManager.toString())
       val byteFile: MappedByteBuffer = loadModelFile(assetManager, modelPath)
       val options = Interpreter.Options()
       options.numThreads = count?.toInt() ?: 1
@@ -43,7 +47,7 @@ class VisionCameraFaceDetection(private val reactContext: ReactApplicationContex
       interpreter?.allocateTensors()
       return "initialization tflite success"
     } catch (e: Exception) {
-      e.printStackTrace()
+      Log.e(TAG_DEBUG, e.toString())
       return e.toString()
     }
   }
@@ -115,5 +119,9 @@ class VisionCameraFaceDetection(private val reactContext: ReactApplicationContex
         smilingProbability = 0.0
       )
     }
+  }
+
+  companion object {
+    const val NAME = "VisionCameraFaceDetection"
   }
 }

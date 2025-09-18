@@ -100,9 +100,14 @@ export default function App() {
   }, [hasPermission, requestPermission]);
 
   useEffect(() => {
-    const response = initTensor('mobile_face_net', 1);
+    const response = initTensor('mobile_face_net');
     console.log(response);
+    showAlert(response);
   }, []);
+
+  function showAlert(message: string) {
+    Alert.alert('Alert', message);
+  }
 
   /**
    * Handle camera UI rotation
@@ -199,7 +204,7 @@ export default function App() {
       console.log('Load Sample Successfully');
     } catch (error) {
       console.log(error);
-      Alert.alert('Error', JSON.stringify(error));
+      showAlert(JSON.stringify(error));
       setDataSample([]);
       setImageSample('');
     } finally {
