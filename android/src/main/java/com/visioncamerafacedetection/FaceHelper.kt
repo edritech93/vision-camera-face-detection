@@ -1,7 +1,9 @@
 package com.visioncamerafacedetection
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.media.ExifInterface
 import android.util.Base64
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceContour
@@ -10,6 +12,7 @@ import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import kotlin.math.ceil
@@ -108,5 +111,31 @@ class FaceHelper {
     bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
     val byteArray = byteArrayOutputStream.toByteArray()
     return Base64.encodeToString(byteArray, Base64.DEFAULT)
+  }
+
+  @SuppressLint("ExifInterface")
+  fun getImageOrientationFromBase64(base64String: String): Int {
+    try {
+      // decode base64 ke byte array
+      val imageBytes = Base64.decode(base64String, Base64.DEFAULT)
+      val inputStream = ByteArrayInputStream(imageBytes)
+
+      val exif = ExifInterface(inputStream)
+
+      val orientation = exif.getAttributeInt(
+        ExifInterface.TAG_ORIENTATION,
+        ExifInterface.ORIENTATION_NORMAL
+      )
+
+      return when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> 90
+        ExifInterface.ORIENTATION_ROTATE_180 -> 180
+        ExifInterface.ORIENTATION_ROTATE_270 -> 270
+        else -> 0
+      }
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+    return 0
   }
 }

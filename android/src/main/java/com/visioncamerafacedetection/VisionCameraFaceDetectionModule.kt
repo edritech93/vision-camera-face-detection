@@ -65,11 +65,12 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
   }
 
   @ReactMethod
-  fun detectFromBase64(imageString: String?, promise: Promise) {
+  fun detectFromBase64(imageString: String, promise: Promise) {
     try {
       val decodedString = Base64.decode(imageString, Base64.DEFAULT)
       val bmpStorageResult = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
-      val image = InputImage.fromBitmap(bmpStorageResult, 0)
+      val rotation = FaceHelper().getImageOrientationFromBase64(imageString)
+      val image = InputImage.fromBitmap(bmpStorageResult, rotation)
       val task = faceDetector.process(image)
       val faces = Tasks.await(task)
       val map: WritableMap = WritableNativeMap()
@@ -83,6 +84,7 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
         val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
         val matrix = Matrix()
         matrix.postTranslate(-faceBB.left, -faceBB.top)
+        matrix.postRotate(rotation.toFloat())
         matrix.postScale(sx, sy)
         cvFace.drawBitmap(bmpStorageResult, matrix, null)
         val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceStorage)
