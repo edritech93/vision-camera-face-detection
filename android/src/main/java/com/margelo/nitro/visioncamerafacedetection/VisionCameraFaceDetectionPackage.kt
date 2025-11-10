@@ -1,14 +1,22 @@
 package com.margelo.nitro.visioncamerafacedetection
 
-import com.facebook.react.TurboReactPackage
+import android.util.Log
+import com.facebook.react.BaseReactPackage
+import com.facebook.react.bridge.ModuleSpec
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.mrousavy.camera.frameprocessors.FrameProcessorPluginRegistry
 
-class VisionCameraFaceDetectionPackage : TurboReactPackage() {
+class VisionCameraFaceDetectionPackage : BaseReactPackage() {
   override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
     return null
+  }
+
+  override fun getViewManagers(reactContext: ReactApplicationContext): List<ModuleSpec> {
+    Log.d("VisionCameraFaceDetection", "ReactContext initialized!")
+    ReactContextHolder.set(reactContext)
+    return super.getViewManagers(reactContext)
   }
 
   override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
@@ -16,8 +24,6 @@ class VisionCameraFaceDetectionPackage : TurboReactPackage() {
   }
 
   companion object {
-    const val TAG_DEBUG = "edritech93"
-
     init {
       System.loadLibrary("visioncamerafacedetection")
       FrameProcessorPluginRegistry.addFrameProcessorPlugin("detectFaces") { proxy, options ->
