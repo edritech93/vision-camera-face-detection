@@ -11,8 +11,10 @@
     "postinstall": "cd ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod install"
   },
   "dependencies": {
-    "react": "19.0.0",
-    "react-native": "0.78.3",
+    "react": "19.2.0",
+    "react-native": "0.83.1",
+    "@react-native/new-app-screen": "0.83.0",
+    "react-native-safe-area-context": "^5.5.2",
     "react-native-image-picker": "^8.2.1",
     "react-native-permissions": "^5.4.2",
     "react-native-reanimated": "^3.19.1",
@@ -23,15 +25,15 @@
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "15.0.1",
-    "@react-native-community/cli-platform-android": "15.0.1",
-    "@react-native-community/cli-platform-ios": "15.0.1",
-    "@react-native/babel-preset": "0.78.3",
-    "@react-native/metro-config": "0.78.3",
-    "@react-native/typescript-config": "0.78.3",
+    "@react-native-community/cli": "20.0.0",
+    "@react-native-community/cli-platform-android": "20.0.0",
+    "@react-native-community/cli-platform-ios": "20.0.0",
+    "@react-native/babel-preset": "0.83.1",
+    "@react-native/metro-config": "0.83.1",
+    "@react-native/typescript-config": "0.83.1",
     "react-native-builder-bob": "^0.36.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }

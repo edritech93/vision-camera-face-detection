@@ -18,9 +18,12 @@ A high-performance Face Detection plugin for [React Native Vision Camera](https:
 
 ## Requirements
 
-- React Native >= 0.71
+- React Native >= 0.83
+- Node.js >= 20
 - react-native-vision-camera >= 4.6
 - react-native-worklets-core >= 1.5
+- iOS 15.5+
+- Android minSdkVersion 24+
 
 ## Installation
 
@@ -319,8 +322,9 @@ If you encounter build issues on iOS, ensure you have:
 
 If you encounter build issues on Android:
 
-1. Ensure `minSdkVersion` is at least 21
-2. Enable `multiDexEnabled` if needed
+1. Ensure `minSdkVersion` is at least 24
+2. Ensure `compileSdkVersion` and `targetSdkVersion` are at least 36
+3. Enable `multiDexEnabled` if needed
 
 ### Performance Tips
 
