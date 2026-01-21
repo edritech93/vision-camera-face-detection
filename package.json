@@ -80,14 +80,14 @@
     "react": "19.2.0",
     "react-native": "0.83.1",
     "react-native-builder-bob": "^0.36.0",
-    "react-native-vision-camera": "^4.7.1",
+    "react-native-vision-camera": "^4.7.3",
     "react-native-worklets-core": "^1.6.2",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.2.2"
   },
   "resolutions": {
-    "@types/react": "^18.2.44"
+    "@types/react": "^19.2.0"
   },
   "peerDependencies": {
     "react": "*",
