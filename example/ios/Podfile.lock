@@ -2782,7 +2782,7 @@ PODS:
   - VisionCamera/React (4.7.3):
     - React-Core
     - VisionCamera/FrameProcessors
-  - VisionCameraFaceDetection (2.2.3):
+  - VisionCameraFaceDetection (2.2.4):
     - boost
     - DoubleConversion
     - fast_float
@@ -3188,7 +3188,7 @@ SPEC CHECKSUMS:
   TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73
   TensorFlowLiteSwift: 723fe42222815e72490c79feeff05305530de393
   VisionCamera: 47f10351a1b6a8d251b90986ae72ca5f52331954
-  VisionCameraFaceDetection: 6b4f396b83412cafb6dd19d256c2242d67afcb25
+  VisionCameraFaceDetection: 3ffce9bb84e2a9e367c13f1ce489831176dad22e
   Yoga: b6cd6b017b2fb1ae4e59cf1d102911f572efdcb7
 
 PODFILE CHECKSUM: d0069ecf84f0adced44c4d6fd7310d80cd5fac56
