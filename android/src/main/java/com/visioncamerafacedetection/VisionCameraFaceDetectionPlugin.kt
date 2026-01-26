@@ -17,7 +17,6 @@ import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.face.FaceLandmark
 import com.mrousavy.camera.core.FrameInvalidError
-import com.mrousavy.camera.core.types.Orientation
 import com.mrousavy.camera.core.types.Position
 import com.mrousavy.camera.frameprocessors.Frame
 import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin

@@ -6,12 +6,10 @@ import android.util.Base64
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceContour
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.support.common.ops.NormalizeOp
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.ResizeOp
+//import com.google.ai.edge.litert.Interpreter
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.ceil
 
 var interpreter: Interpreter? = null
@@ -19,14 +17,64 @@ const val TF_OD_API_INPUT_SIZE = 112
 
 class FaceHelper {
 
-  private val imageTensorProcessor: ImageProcessor = ImageProcessor.Builder()
-    .add(ResizeOp(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, ResizeOp.ResizeMethod.BILINEAR))
-    .add(NormalizeOp(127.5f, 127.5f))
-    .build()
-
+  /**
+   * Converts a bitmap to a ByteBuffer suitable for TensorFlow Lite inference.
+   * This replaces the litert-support library's ImageProcessor functionality.
+   *
+   * The bitmap is resized to TF_OD_API_INPUT_SIZE x TF_OD_API_INPUT_SIZE and
+   * normalized using the formula: (pixel - 127.5) / 127.5
+   */
   fun bitmap2ByteBuffer(bitmap: Bitmap?): ByteBuffer {
-    val imageTensor: TensorImage = imageTensorProcessor.process(TensorImage.fromBitmap(bitmap))
-    return imageTensor.buffer
+    if (bitmap == null) {
+      // Return an empty buffer if bitmap is null
+      val emptyBuffer = ByteBuffer.allocateDirect(TF_OD_API_INPUT_SIZE * TF_OD_API_INPUT_SIZE * 3 * 4)
+      emptyBuffer.order(ByteOrder.nativeOrder())
+      return emptyBuffer
+    }
+
+    // Resize bitmap to the required input size using bilinear filtering
+    val resizedBitmap = Bitmap.createScaledBitmap(
+      bitmap,
+      TF_OD_API_INPUT_SIZE,
+      TF_OD_API_INPUT_SIZE,
+      true
+    )
+
+    // Allocate ByteBuffer for float values (3 channels * 4 bytes per float)
+    val byteBuffer = ByteBuffer.allocateDirect(TF_OD_API_INPUT_SIZE * TF_OD_API_INPUT_SIZE * 3 * 4)
+    byteBuffer.order(ByteOrder.nativeOrder())
+
+    // Extract pixel values and normalize
+    val intValues = IntArray(TF_OD_API_INPUT_SIZE * TF_OD_API_INPUT_SIZE)
+    resizedBitmap.getPixels(
+      intValues,
+      0,
+      TF_OD_API_INPUT_SIZE,
+      0,
+      0,
+      TF_OD_API_INPUT_SIZE,
+      TF_OD_API_INPUT_SIZE
+    )
+
+    // Normalize pixel values: (pixel - 127.5) / 127.5
+    // This maps [0, 255] to [-1, 1]
+    for (pixelValue in intValues) {
+      val r = (pixelValue shr 16 and 0xFF)
+      val g = (pixelValue shr 8 and 0xFF)
+      val b = (pixelValue and 0xFF)
+
+      byteBuffer.putFloat((r - 127.5f) / 127.5f)
+      byteBuffer.putFloat((g - 127.5f) / 127.5f)
+      byteBuffer.putFloat((b - 127.5f) / 127.5f)
+    }
+
+    // Clean up resized bitmap if it's different from the original
+    if (resizedBitmap != bitmap) {
+      resizedBitmap.recycle()
+    }
+
+    byteBuffer.rewind()
+    return byteBuffer
   }
 
   fun processBoundingBox(boundingBox: Rect): MutableMap<String, Any> {
