@@ -291,21 +291,40 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       for face in faces {
         var map: [String: Any] = [:]
         if enableTensor {
+          // Check if interpreter is initialized
+          guard let tfliteInterpreter = interpreter else {
+            print("Error: TensorFlow Lite interpreter is not initialized. Call initTensor() first.")
+            map["data"] = []
+            map["error"] = "Interpreter not initialized"
+            result.append(map)
+            continue
+          }
+          
           guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: image.orientation) else {
-            return nil
+            print("Error: Failed to crop face image from buffer")
+            map["data"] = []
+            map["error"] = "Failed to crop face image"
+            result.append(map)
+            continue
           }
           guard let rgbData = FaceHelper.rgbDataFromBuffer(imageCrop) else {
-            return nil
-          }
-          try interpreter?.copy(rgbData, toInputAt: 0)
-          try interpreter?.invoke()
-          let outputTensor: Tensor? = try interpreter?.output(at: 0)
-          
-          if ((outputTensor?.data) != nil) {
-            let result: [Float] = [Float32](unsafeData: outputTensor!.data) ?? []
-            map["data"] = result
-          } else {
+            print("Error: Failed to convert image buffer to RGB data")
             map["data"] = []
+            map["error"] = "Failed to convert to RGB"
+            result.append(map)
+            continue
+          }
+          
+          do {
+            try tfliteInterpreter.copy(rgbData, toInputAt: 0)
+            try tfliteInterpreter.invoke()
+            let outputTensor: Tensor = try tfliteInterpreter.output(at: 0)
+            let embeddingData: [Float] = [Float32](unsafeData: outputTensor.data) ?? []
+            map["data"] = embeddingData
+          } catch let tensorError {
+            print("Error running TensorFlow inference: \(tensorError.localizedDescription)")
+            map["data"] = []
+            map["error"] = "TensorFlow inference failed: \(tensorError.localizedDescription)"
           }
         } else {
           map["data"] = []

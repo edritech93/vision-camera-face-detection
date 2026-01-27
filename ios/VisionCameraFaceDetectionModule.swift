@@ -24,7 +24,9 @@ class VisionCameraFaceDetectionModule: NSObject {
             forResource: modelName,
             ofType: "tflite"
         ) else {
-            print("Failed to load the model file with name: \(modelName).")
+            let errorMessage = "Failed to load the model file with name: \(modelName).tflite. Make sure the file is added to your app bundle."
+            print(errorMessage)
+            reject("MODEL_NOT_FOUND", errorMessage, nil)
             return
         }
         do {
@@ -32,10 +34,11 @@ class VisionCameraFaceDetectionModule: NSObject {
             options.threadCount = count
             interpreter = try Interpreter(modelPath: modelPath, options: options)
             try interpreter?.allocateTensors()
+            print("TensorFlow Lite interpreter initialized successfully with model: \(modelName)")
             resolve("initialization tflite success")
         } catch let error {
             print("Failed to create the interpreter with error: \(error.localizedDescription)")
-            reject("Error", "tflite error", error)
+            reject("INTERPRETER_ERROR", "tflite error: \(error.localizedDescription)", error)
             return
         }
     }
