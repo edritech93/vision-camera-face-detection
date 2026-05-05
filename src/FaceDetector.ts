@@ -30,7 +30,6 @@ export interface Face {
   contours?: Contours;
   landmarks?: Landmarks;
   data: number[];
-  error?: string;
 }
 
 export interface Bounds {

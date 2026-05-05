@@ -112,28 +112,12 @@ class FaceHelper {
   
   static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer, rectImage: CGRect, orientation: UIImage.Orientation) -> CVPixelBuffer? {
     autoreleasepool {
-      guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-        print("Error: Failed to get image buffer from sample buffer")
-        return nil
-      }
-      
-      let ciimage = CIImage(cvPixelBuffer: imageBuffer)
+      let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+      let ciimage = CIImage(cvPixelBuffer: imageBuffer!)
       let context = CIContext(options: nil)
+      let cgImage = context.createCGImage(ciimage, from: ciimage.extent)!
       
-      guard let cgImage = context.createCGImage(ciimage, from: ciimage.extent) else {
-        print("Error: Failed to create CGImage from CIImage")
-        return nil
-      }
-      
-      // Ensure rectImage is within bounds of the image
-      let imageRect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
-      let clampedRect = rectImage.intersection(imageRect)
-      
-      guard !clampedRect.isEmpty, let imageRef = cgImage.cropping(to: clampedRect) else {
-        print("Error: Failed to crop image. Face rect: \(rectImage), Image bounds: \(imageRect)")
-        return nil
-      }
-      
+      let imageRef: CGImage = cgImage.cropping(to: rectImage)!
       let imageCrop: UIImage = UIImage(cgImage: imageRef, scale: 0.5, orientation: orientation)
       return uiImageToPixelBuffer(image: imageCrop, size: inputWidth)
     }

@@ -55,7 +55,6 @@ export default function App() {
     windowWidth: widthScreen,
     windowHeight: heightScreen,
   }).current;
-  const dataError = useRef<string>('');
   const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
   //
   // vision camera ref
@@ -103,10 +102,7 @@ export default function App() {
   useEffect(() => {
     initTensor('mobile_face_net', 1)
       .then((response: any) => console.log(response))
-      .catch((error: any) => {
-        console.log(error);
-        Alert.alert('Init Model', JSON.stringify(error));
-      });
+      .catch((error: any) => console.log(error));
   }, []);
 
   /**
@@ -164,7 +160,6 @@ export default function App() {
         setDistanceNum(distance);
       }
     }
-    dataError.current = face?.error ?? '';
   }
 
   async function _pickImageSample() {
@@ -275,7 +270,6 @@ export default function App() {
       </View>
 
       <View style={styles.wrapMainBtn}>
-        <Text>{dataError.current}</Text>
         <Button
           onPress={() => setEnableTensor((current) => !current)}
           title={`${enableTensor ? 'Disable' : 'Enable'} Tensor`}
