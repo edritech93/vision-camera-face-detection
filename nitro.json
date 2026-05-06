@@ -1,0 +1,23 @@
+{
+  "cxxNamespace": ["visioncamerafacedetection"],
+  "ios": {
+    "iosModuleName": "VisionCameraFaceDetection"
+  },
+  "android": {
+    "androidNamespace": ["visioncamerafacedetection"],
+    "androidCxxLibName": "visioncamerafacedetection"
+  },
+  "autolinking": {
+    "VisionCameraFaceDetection": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "VisionCameraFaceDetection"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "VisionCameraFaceDetection"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
