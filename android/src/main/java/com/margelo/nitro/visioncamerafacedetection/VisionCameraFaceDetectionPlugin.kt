@@ -1,4 +1,4 @@
-package com.visioncamerafacedetection
+package com.margelo.nitro.visioncamerafacedetection
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
