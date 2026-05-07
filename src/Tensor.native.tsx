@@ -1,20 +1,14 @@
 import { NitroModules } from 'react-native-nitro-modules';
-import type {
-  DetectBas64Type,
-  VisionCameraFaceDetection,
-} from './VisionCameraFaceDetection.nitro';
+import type { DetectBase64Type, Tensor } from './specs/Tensor.nitro';
 
-const VisionCameraFaceDetectionHybridObject =
-  NitroModules.createHybridObject<VisionCameraFaceDetection>(
-    'VisionCameraFaceDetection'
-  );
+const TensorHybridObject = NitroModules.createHybridObject<Tensor>('Tensor');
 
 export function initTensor(modelPath: string, count?: number): Promise<string> {
-  return VisionCameraFaceDetectionHybridObject.initTensor(modelPath, count);
+  return TensorHybridObject.initTensor(modelPath, count);
 }
 
 export function detectFromBase64(
   imageString: string
-): Promise<DetectBas64Type> {
-  return VisionCameraFaceDetectionHybridObject.detectFromBase64(imageString);
+): Promise<DetectBase64Type> {
+  return TensorHybridObject.detectFromBase64(imageString);
 }

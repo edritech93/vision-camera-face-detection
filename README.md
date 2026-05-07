@@ -160,14 +160,14 @@ For face recognition/embedding using TensorFlow Lite:
 import {
   initTensor,
   detectFromBase64,
-  type DetectBas64Type,
+  type DetectBase64Type,
 } from 'vision-camera-face-detection';
 
 // Initialize TensorFlow Lite model
 await initTensor('mobile_face_net', 1);
 
 // Detect face from base64 image and get embedding
-const result: DetectBas64Type = await detectFromBase64(base64Image);
+const result: DetectBase64Type = await detectFromBase64(base64Image);
 console.log('Face embedding:', result.data);
 console.log('Cropped face base64:', result.base64);
 ```
@@ -272,12 +272,12 @@ Initialize TensorFlow Lite model for face recognition.
 - `modelPath`: Name of the TFLite model file (without extension)
 - `count`: Number of threads (optional)
 
-#### `detectFromBase64(imageString: string): Promise<DetectBas64Type>`
+#### `detectFromBase64(imageString: string): Promise<DetectBase64Type>`
 
 Detect face from base64 image and return face embedding.
 
 ```typescript
-type DetectBas64Type = {
+type DetectBase64Type = {
   base64: string; // Cropped face image
   data: number[]; // Face embedding array
   message: string; // Status message
