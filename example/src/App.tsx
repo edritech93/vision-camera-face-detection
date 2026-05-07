@@ -21,7 +21,7 @@
 //   type FaceDetectionOptions,
 //   initTensor,
 //   detectFromBase64,
-//   type DetectBase64Type,
+//   type DetectBase64,
 // } from 'vision-camera-face-detection';
 // import Animated, {
 //   useAnimatedStyle,
@@ -187,7 +187,7 @@
 //         throw { message: 'Invalid URI' };
 //       }
 //       const imageFull = itemAsset.base64 ?? '';
-//       const imageFace: DetectBase64Type = await detectFromBase64(
+//       const imageFace: DetectBase64 = await detectFromBase64(
 //         imageFull
 //       ).catch((error) => {
 //         throw error;

@@ -10,5 +10,7 @@ export * from './specs/FaceDetector.nitro';
 export * from './specs/ImageFaceDetector.nitro';
 export * from './specs/FaceDetectorFactory.nitro';
 export * from './specs/ImageFaceDetectorFactory.nitro';
+export * from './specs/Tensor.nitro';
+export * from './specs/DetectBase64';
 export { default as Camera } from './views/Camera';
 export * from './Tensor';

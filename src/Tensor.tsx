@@ -1,4 +1,4 @@
-import type { DetectBase64Type } from './specs/Tensor.nitro';
+import type { DetectBase64 } from './specs/DetectBase64';
 
 export function initTensor(_: string, __?: number): Promise<string> {
   throw new Error(
@@ -6,7 +6,7 @@ export function initTensor(_: string, __?: number): Promise<string> {
   );
 }
 
-export function detectFromBase64(_: string): Promise<DetectBase64Type> {
+export function detectFromBase64(_: string): Promise<DetectBase64> {
   throw new Error(
     "'vision-camera-face-detection' is only supported on native platforms."
   );
