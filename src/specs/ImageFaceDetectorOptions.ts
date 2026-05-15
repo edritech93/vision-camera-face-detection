@@ -1,6 +1,3 @@
-import type { HybridObject } from 'react-native-nitro-modules';
-import type { ImageFaceDetector } from './ImageFaceDetector.nitro';
-
 type PerformanceMode = 'fast' | 'accurate';
 export interface ImageFaceDetectorOptions {
   /**
@@ -46,14 +43,4 @@ export interface ImageFaceDetectorOptions {
    * @default false
    */
   trackingEnabled?: boolean;
-}
-
-export interface ImageFaceDetectorFactory extends HybridObject<{
-  ios: 'swift';
-  android: 'kotlin';
-}> {
-  /**
-   * Create a new {@linkcode ImageFaceDetector}.
-   */
-  createImageFaceDetector(options: ImageFaceDetectorOptions): ImageFaceDetector;
 }

@@ -1,10 +1,10 @@
-import type { CameraOutput, CameraPosition } from 'react-native-vision-camera';
 import type { HybridObject } from 'react-native-nitro-modules';
+import type { FaceScanner } from './FaceScanner.nitro';
+import type { CameraOutput, CameraPosition } from 'react-native-vision-camera';
+import type { ImageFaceDetectorOptions } from './ImageFaceDetectorOptions';
 import type { Face } from './Face.nitro';
-import type { FaceDetector } from './FaceDetector.nitro';
-import type { ImageFaceDetectorOptions } from './ImageFaceDetectorFactory.nitro';
 
-export interface FaceDetectorOptions extends ImageFaceDetectorOptions {
+export interface FaceScannerOptions extends ImageFaceDetectorOptions {
   /**
    * Current active camera
    *
@@ -44,7 +44,7 @@ export interface FaceDetectorOptions extends ImageFaceDetectorOptions {
  */
 export type FaceDetectorOutputResolution = 'preview' | 'full';
 
-export interface FaceDetectorOutputOptions extends FaceDetectorOptions {
+export interface FaceScannerOutputOptions extends FaceScannerOptions {
   /**
    * Controls which camera buffer resolution should be used.
    *
@@ -57,26 +57,39 @@ export interface FaceDetectorOutputOptions extends FaceDetectorOptions {
   /**
    * Called whenever faces have been detected.
    */
-  onFacesDetected: (faces: Face[]) => void;
-
+  onFaceScanned: (faces: Face[]) => void;
   /**
    * Called when there was an error detecting faces.
    */
   onError: (error: Error) => void;
 }
 
-export interface FaceDetectorFactory extends HybridObject<{
+export interface FaceScannerFactory extends HybridObject<{
   ios: 'swift';
   android: 'kotlin';
 }> {
   /**
-   * Create a new {@linkcode FaceDetector}.
+   * Create a new {@linkcode FaceScanner} with the given {@linkcode options}.
+   *
+   * @example
+   * ```ts
+   * import { createFaceScanner } from 'vision-camera-face-detection'
+   * import { useFrameProcessor } from 'react-native-vision-camera'
+   *
+   * const scanner = createFaceScanner({})
+   *
+   * const frameProcessor = useFrameProcessor((frame) => {
+   *   'worklet'
+   *   const faces = scanner.scanFaces(frame)
+   *   console.log(`Detected ${faces.length} face(s)`)
+   * }, [scanner])
+   * ```
    */
-  createFaceDetector(options: FaceDetectorOptions): FaceDetector;
+  createFaceScanner(options: FaceScannerOptions): FaceScanner;
 
   /**
    * Create a new {@linkcode CameraOutput} that can
-   * detect Barcodes.
+   * detect Face.
    */
-  createFaceDetectorOutput(options: FaceDetectorOutputOptions): CameraOutput;
+  createFaceScannerOutput(options: FaceScannerOutputOptions): CameraOutput;
 }

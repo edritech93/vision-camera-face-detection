@@ -8,16 +8,16 @@
     "androidCxxLibName": "visioncamerafacedetection"
   },
   "autolinking": {
-    "VisionCameraFaceDetection": {
+    "FaceScannerFactory": {
       "ios": {
         "language": "swift",
-        "implementationClassName": "VisionCameraFaceDetection"
+        "implementationClassName": "HybridFaceScannerFactory"
       },
       "android": {
         "language": "kotlin",
-        "implementationClassName": "VisionCameraFaceDetection"
+        "implementationClassName": "HybridFaceScannerFactory"
       }
     }
   },
-  "ignorePaths": ["node_modules"]
+  "ignorePaths": ["node_modules", "example"]
 }

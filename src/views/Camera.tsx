@@ -1,14 +1,11 @@
-import React from 'react';
-import { Camera as VisionCamera } from 'react-native-vision-camera';
-
-// types
 import type { RefObject } from 'react';
+import { Camera as VisionCamera } from 'react-native-vision-camera';
 import type { CameraViewProps, CameraRef } from 'react-native-vision-camera';
-import type { FaceDetectorOutputOptions } from '../specs/FaceDetectorFactory.nitro';
-import useFaceDetectorOutput from '../hooks/useFaceDetectorOutput';
+import { useFaceScannerOutput } from '../hooks/useFaceScannerOutput';
+import type { FaceScannerOutputOptions } from '../specs/FaceScannerFactory.nitro';
 
 interface ComponentType
-  extends Omit<CameraViewProps, 'onError'>, FaceDetectorOutputOptions {
+  extends Omit<CameraViewProps, 'onError'>, FaceScannerOutputOptions {
   ref?: RefObject<CameraRef | null>;
 }
 
@@ -27,7 +24,7 @@ interface ComponentType
  *     <Camera
  *       isActive={isActive}
  *       barcodeFormats={['all']}
- *       onFacesDetected={(faces) => {
+ *       onFaceScanned={(faces) => {
  *         console.log(`Detected ${faces.length} faces!`)
  *       }}
  *       onError={(error) => {
@@ -39,7 +36,7 @@ interface ComponentType
  * ```
  */
 export function Camera({
-  onFacesDetected,
+  onFaceScanned,
   onError,
   outputResolution,
   cameraFacing,
@@ -54,8 +51,8 @@ export function Camera({
   trackingEnabled,
   ...cameraProps
 }: ComponentType) {
-  const output = useFaceDetectorOutput({
-    onFacesDetected,
+  const output = useFaceScannerOutput({
+    onFaceScanned,
     onError,
     outputResolution,
     cameraFacing,

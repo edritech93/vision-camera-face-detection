@@ -40,6 +40,7 @@ apply plugin: "com.facebook.react"
 android {
   namespace "com.margelo.nitro.visioncamerafacedetection"
 
+  ndkVersion getExtOrDefault("ndkVersion")
   compileSdkVersion getExtOrDefault("compileSdkVersion")
 
   defaultConfig {
@@ -119,10 +120,7 @@ dependencies {
   // Google MLKit library
   implementation "com.google.mlkit:face-detection:16.1.7"
   // Add a dependency on NitroModules
-  compileOnly project(":react-native-nitro-modules")
+  implementation project(":react-native-nitro-modules")
   // Add a dependency on VisionCamera (for HybridFrameSpec and HybridCameraOutputSpec)
-  compileOnly project(":react-native-vision-camera")
-  // Add a dependency on Litert for Tensor support
-  implementation 'com.google.ai.edge.litert:litert:1.4.1'
-  implementation 'com.google.ai.edge.litert:litert-support:1.4.1'
+  implementation project(":react-native-vision-camera")
 }

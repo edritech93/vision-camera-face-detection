@@ -1,55 +1,21 @@
 import { NitroModules } from 'react-native-nitro-modules';
-import type { CameraOutput, Frame } from 'react-native-vision-camera';
-import type { Face } from './specs/Face.nitro';
-import type { FaceDetector } from './specs/FaceDetector.nitro';
-import type { ImageFaceDetector } from './specs/ImageFaceDetector.nitro';
 import type {
-  FaceDetectorFactory,
-  FaceDetectorOptions,
-  FaceDetectorOutputOptions,
-} from './specs/FaceDetectorFactory.nitro';
-import type { ImageFaceDetectorFactory } from './specs/ImageFaceDetectorFactory.nitro';
+  FaceScannerFactory,
+  FaceScannerOptions,
+  FaceScannerOutputOptions,
+} from './specs/FaceScannerFactory.nitro';
+import type { FaceScanner } from './specs/FaceScanner.nitro';
+import type { CameraOutput } from 'react-native-vision-camera';
 
-const faceDetectorFactory =
-  NitroModules.createHybridObject<FaceDetectorFactory>('FaceDetectorFactory');
+const factory =
+  NitroModules.createHybridObject<FaceScannerFactory>('FaceScannerFactory');
 
-const imageFaceDetectorFactory =
-  NitroModules.createHybridObject<ImageFaceDetectorFactory>(
-    'ImageFaceDetectorFactory'
-  );
-
-/**
- * Create a new {@linkcode FaceDetector}.
- *
- * The {@linkcode FaceDetector} can be used to
- * scan {@linkcode Face}s in a {@linkcode Frame}.
- */
-export function createFaceDetector(
-  options?: FaceDetectorOptions
-): FaceDetector {
-  return faceDetectorFactory.createFaceDetector(options ?? {});
+export function createFaceScanner(options: FaceScannerOptions): FaceScanner {
+  return factory.createFaceScanner(options);
 }
 
-/**
- * Create a new {@linkcode FaceDetector}.
- *
- * The {@linkcode FaceDetector} can be used to
- * scan {@linkcode Face}s in a {@linkcode Frame}.
- */
-export function createFaceDetectorOutput(
-  options: FaceDetectorOutputOptions
+export function createFaceScannerOutput(
+  options: FaceScannerOutputOptions
 ): CameraOutput {
-  return faceDetectorFactory.createFaceDetectorOutput(options);
-}
-
-/**
- * Create a new image {@linkcode ImageFaceDetector}.
- *
- * The {@linkcode ImageFaceDetector} can be used to
- * scan {@linkcode Face}s in a {@linkcode Frame}.
- */
-export function createImageFaceDetector(
-  options?: FaceDetectorOptions
-): ImageFaceDetector {
-  return imageFaceDetectorFactory.createImageFaceDetector(options ?? {});
+  return factory.createFaceScannerOutput(options);
 }
