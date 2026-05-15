@@ -6,11 +6,11 @@ import { createFaceScanner } from '../factory';
 /**
  * @example
  * ```ts
- * const faceScanner = useFaceScanner({})
+ * const {scanFaces} = useFaceScanner({})
  * const frameOutput = useFrameOutput({
  *   onFrame(frame) {
  *     'worklet'
- *     const result = faceScanner.call()
+ *     const result = scanFaces(frame)
  *     console.log(`Detected ${result.length} faces!`)
  *     frame.dispose()
  *   }

@@ -74,15 +74,16 @@ export interface FaceScannerFactory extends HybridObject<{
    * @example
    * ```ts
    * import { createFaceScanner } from 'vision-camera-face-detection'
-   * import { useFrameProcessor } from 'react-native-vision-camera'
+   * import { useFrameOutput } from 'react-native-vision-camera'
    *
    * const scanner = createFaceScanner({})
    *
-   * const frameProcessor = useFrameProcessor((frame) => {
-   *   'worklet'
+   * const frameOutput = useFrameOutput({
+   *   onFrame(frame) {
    *   const faces = scanner.scanFaces(frame)
    *   console.log(`Detected ${faces.length} face(s)`)
-   * }, [scanner])
+   *  },
+   * });
    * ```
    */
   createFaceScanner(options: FaceScannerOptions): FaceScanner;

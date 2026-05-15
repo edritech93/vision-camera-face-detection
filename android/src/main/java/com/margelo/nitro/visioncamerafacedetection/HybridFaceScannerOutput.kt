@@ -33,7 +33,7 @@ class HybridFaceScannerOutput(
       imageAnalysis?.targetRotation = value.surfaceRotation
     }
   private val context =
-    NitroModules.applicationContext ?: throw Error("Face Detector - No Context available!")
+    NitroModules.applicationContext ?: throw Error("Face Scanner - No Context available!")
   private val orientationManager = FaceDetectorOrientation.get(context.applicationContext)
   private val runLandmarks = options.runLandmarks ?: false
   private val runContours = options.runContours ?: false
