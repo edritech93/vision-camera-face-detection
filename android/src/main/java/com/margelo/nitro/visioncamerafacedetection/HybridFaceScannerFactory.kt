@@ -13,7 +13,7 @@ class HybridFaceScannerFactory : HybridFaceScannerFactorySpec() {
     return HybridFaceScanner(options)
   }
 
-    @DoNotStrip
+  @DoNotStrip
   @Keep
   override fun createFaceScannerOutput(options: FaceScannerOutputOptions): HybridCameraOutputSpec {
     return HybridFaceScannerOutput(options)
