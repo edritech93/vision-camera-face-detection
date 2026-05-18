@@ -123,4 +123,7 @@ dependencies {
   implementation project(":react-native-nitro-modules")
   // Add a dependency on VisionCamera (for HybridFrameSpec and HybridCameraOutputSpec)
   implementation project(":react-native-vision-camera")
+  // Add a dependency Tensorflow Lite
+  implementation 'com.google.ai.edge.litert:litert:1.4.1'
+  implementation 'com.google.ai.edge.litert:litert-support:1.4.1'
 }

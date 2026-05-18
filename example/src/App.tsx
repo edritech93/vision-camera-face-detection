@@ -7,6 +7,7 @@ import {
 } from 'react-native-vision-camera';
 import {
   Camera,
+  initTensor,
   type Face,
   type FaceScannerOptions,
 } from 'vision-camera-face-detection';
@@ -29,6 +30,11 @@ export default function App() {
     if (hasPermission) return;
     requestPermission();
   }, [hasPermission, requestPermission]);
+
+  useEffect(() => {
+    const result = initTensor('mobile_face_net', 1);
+    console.log(`Tensor initialized with result: ${result}`);
+  }, []);
 
   if (device == null) {
     return (
@@ -56,6 +62,9 @@ export default function App() {
         autoMode={true}
         cameraFacing={'front'}
       />
+      {/* <Animated.View style={animatedStyle}>
+                  <Text style={styles.textDistance}>{distanceNum}</Text>
+                </Animated.View> */}
     </View>
   );
 }
