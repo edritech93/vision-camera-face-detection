@@ -42,7 +42,6 @@ export default function App() {
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
   const [autoScale, setAutoScale] = useState<boolean>(true);
   const [facingFront, setFacingFront] = useState<boolean>(true);
-  const [enableTensor, setEnableTensor] = useState<boolean>(false);
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
@@ -250,10 +249,6 @@ export default function App() {
       </View>
 
       <View style={styles.wrapMainBtn}>
-        <Button
-          onPress={() => setEnableTensor((current) => !current)}
-          title={`${enableTensor ? 'Disable' : 'Enable'} Tensor`}
-        />
         <View style={styles.wrapBtn}>
           <Button
             onPress={() => setFacingFront((current) => !current)}
