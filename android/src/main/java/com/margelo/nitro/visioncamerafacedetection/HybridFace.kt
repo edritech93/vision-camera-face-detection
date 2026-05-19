@@ -22,7 +22,10 @@ data class FaceProcessConfig(
 
 class HybridFace(
   private val face: Face,
-  private val config: FaceProcessConfig
+  private val config: FaceProcessConfig,
+  override val base64: String?,
+  override val data: Array<String>?,
+  override val message: String?
 ) : HybridFaceSpec() {
   private fun transformPoint(
     x: Double,

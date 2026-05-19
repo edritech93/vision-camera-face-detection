@@ -51,7 +51,11 @@ class HybridFaceScanner(
     )
     val task = faceDetector.process(image)
     val faces = Tasks.await(task).map {
-      HybridFace(it, config)
+      HybridFace(
+        it, config, base64 = "",
+        data = emptyArray(),
+        message = "Successfully Get Face"
+      )
     }.toTypedArray<HybridFaceSpec>()
 
     return faces

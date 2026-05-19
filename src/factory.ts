@@ -6,7 +6,10 @@ import type {
 } from './specs/FaceScannerFactory.nitro';
 import type { FaceScanner } from './specs/FaceScanner.nitro';
 import type { CameraOutput } from 'react-native-vision-camera';
-import type { TensorFactory } from './specs/TensorFactory.nitro';
+import type {
+  TensorFaceOptions,
+  TensorFactory,
+} from './specs/TensorFactory.nitro';
 
 const factoryFace =
   NitroModules.createHybridObject<FaceScannerFactory>('FaceScannerFactory');
@@ -24,10 +27,10 @@ export function createFaceScannerOutput(
 const factoryTensor =
   NitroModules.createHybridObject<TensorFactory>('TensorFactory');
 
-export function initTensor(modelPath: string, count?: number): string {
-  return factoryTensor.initTensor(modelPath, count);
+export function initTensor(): string {
+  return factoryTensor.initTensor();
 }
 
-export function detectFromBase64(imageString: string) {
-  return factoryTensor.detectFromBase64(imageString);
+export function detectFromBase64(options: TensorFaceOptions) {
+  return factoryTensor.detectFromBase64(options);
 }

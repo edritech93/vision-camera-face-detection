@@ -8,8 +8,10 @@ import {
 import {
   Camera,
   initTensor,
+  // detectFromBase64,
   type Face,
   type FaceScannerOptions,
+  // type TensorFaceOptions,
 } from 'vision-camera-face-detection';
 
 export default function App() {
@@ -32,9 +34,10 @@ export default function App() {
   }, [hasPermission, requestPermission]);
 
   useEffect(() => {
-    const result = initTensor('mobile_face_net', 1);
+    if (!hasPermission) return;
+    const result = initTensor();
     console.log(`Tensor initialized with result: ${result}`);
-  }, []);
+  }, [hasPermission]);
 
   if (device == null) {
     return (

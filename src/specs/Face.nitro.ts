@@ -17,4 +17,7 @@ export interface Face extends HybridObject<{
   readonly pitchAngle: number;
   readonly rollAngle: number;
   readonly yawAngle: number;
+  readonly base64?: string;
+  readonly data?: string[];
+  readonly message?: string;
 }

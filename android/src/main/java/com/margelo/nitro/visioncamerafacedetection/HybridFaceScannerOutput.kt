@@ -130,7 +130,14 @@ class HybridFaceScannerOutput(
         .addOnSuccessListener { faces ->
           val hybridFaces =
             faces
-              .map { HybridFace(it, config) }
+              .map {
+                HybridFace(
+                  it, config,
+                  base64 = "",
+                  data = emptyArray(),
+                  message = "Successfully Get Face"
+                )
+              }
               .toTypedArray<HybridFaceSpec>()
           options.onFaceScanned(hybridFaces)
         }.addOnFailureListener { error ->

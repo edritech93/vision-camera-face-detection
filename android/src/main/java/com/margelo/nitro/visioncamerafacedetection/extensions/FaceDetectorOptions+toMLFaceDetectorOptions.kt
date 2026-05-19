@@ -2,6 +2,7 @@ package com.margelo.nitro.visioncamerafacedetection.extensions
 
 import com.margelo.nitro.visioncamerafacedetection.FaceScannerOptions
 import com.margelo.nitro.visioncamerafacedetection.FaceScannerOutputOptions
+import com.margelo.nitro.visioncamerafacedetection.TensorFaceOptions
 import com.google.mlkit.vision.face.FaceDetectorOptions as MLFaceDetectorOptions
 
 fun FaceScannerOptions.toMLFaceDetectorOptions(): MLFaceDetectorOptions {
@@ -16,6 +17,17 @@ fun FaceScannerOptions.toMLFaceDetectorOptions(): MLFaceDetectorOptions {
 }
 
 fun FaceScannerOutputOptions.toMLFaceDetectorOptions(): MLFaceDetectorOptions {
+  return buildMLFaceDetectorOptions(
+    performanceMode,
+    runLandmarks,
+    runContours,
+    runClassifications,
+    minFaceSize,
+    trackingEnabled
+  )
+}
+
+fun TensorFaceOptions.toMLFaceDetectorOptions(): MLFaceDetectorOptions {
   return buildMLFaceDetectorOptions(
     performanceMode,
     runLandmarks,
