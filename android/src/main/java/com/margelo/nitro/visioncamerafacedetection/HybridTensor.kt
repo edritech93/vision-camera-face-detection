@@ -1,11 +1,11 @@
 package com.margelo.nitro.visioncamerafacedetection
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.RectF
 import android.util.Base64
+import androidx.core.graphics.createBitmap
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
@@ -54,7 +54,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     val decodedString = Base64.decode(options.base64Image, Base64.DEFAULT)
     val bmpStorageResult = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
     val mlImage = InputImage.fromBitmap(bmpStorageResult, 0)
-    var config = FaceProcessConfig(
+    val config = FaceProcessConfig(
       width = mlImage.height.toDouble(),
       height = mlImage.width.toDouble(),
       scaleX = 1.0,
@@ -71,7 +71,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     }
     val face = faces[0]
     val bmpFaceStorage =
-      Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Bitmap.Config.ARGB_8888)
+      createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE)
     val faceBB = RectF(face.boundingBox)
     val cvFace = Canvas(bmpFaceStorage)
     val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()

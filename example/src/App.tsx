@@ -40,7 +40,6 @@ export default function App() {
   const { width: widthScreen, height: heightScreen } = useWindowDimensions();
   const [cameraMounted, setCameraMounted] = useState<boolean>(false);
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
-  const [autoScale, setAutoScale] = useState<boolean>(true);
   const [facingFront, setFacingFront] = useState<boolean>(true);
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
@@ -67,14 +66,13 @@ export default function App() {
   const aFaceH = useSharedValue(0);
   const aFaceX = useSharedValue(0);
   const aFaceY = useSharedValue(0);
-  const aRot = useSharedValue(0);
-  const animatedStyle = useAnimatedStyle(() => ({
+  const boundingBoxStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: 4,
     borderLeftColor: 'rgb(0,255,0)',
     borderRightColor: 'rgb(0,255,0)',
     borderBottomColor: 'rgb(0,255,0)',
-    borderTopColor: 'rgb(0,255,0)',
+    borderTopColor: 'rgb(255,0,0)',
     width: withTiming(aFaceW.value, {
       duration: 100,
     }),
@@ -87,11 +85,6 @@ export default function App() {
     top: withTiming(aFaceY.value, {
       duration: 100,
     }),
-    transform: [
-      {
-        rotate: `${aRot.value}deg`,
-      },
-    ],
   }));
 
   useEffect(() => {
@@ -166,7 +159,13 @@ export default function App() {
 
   const onFaceScanned = (faces: Face[]) => {
     console.log(`Detected ${faces.length} face(s)`);
-    if (Object.keys(faces).length <= 0) return;
+    if (Object.keys(faces).length <= 0) {
+      aFaceW.value = 0;
+      aFaceH.value = 0;
+      aFaceX.value = 0;
+      aFaceY.value = 0;
+      return;
+    }
     const face = faces[0];
     if (face) {
       const { bounds } = face;
@@ -212,7 +211,7 @@ export default function App() {
                   autoMode={true}
                   cameraFacing={facingFront ? 'front' : 'back'}
                 />
-                <Animated.View style={animatedStyle}>
+                <Animated.View style={boundingBoxStyle}>
                   <Text style={styles.textDistance}>{distanceNum}</Text>
                 </Animated.View>
                 {cameraPaused && (
@@ -253,10 +252,6 @@ export default function App() {
           <Button
             onPress={() => setFacingFront((current) => !current)}
             title={'Toggle Cam'}
-          />
-          <Button
-            onPress={() => setAutoScale((current) => !current)}
-            title={`${autoScale ? 'Disable' : 'Enable'} Scale`}
           />
         </View>
         <View style={styles.wrapBtn}>

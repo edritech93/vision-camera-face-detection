@@ -1,5 +1,8 @@
 package com.margelo.nitro.visioncamerafacedetection
 
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.RectF
 import android.util.Size
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -7,7 +10,9 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
+import androidx.core.graphics.createBitmap
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.common.internal.ImageConvertUtils
 import com.google.mlkit.vision.face.FaceDetection
 import com.margelo.nitro.NitroModules
 import com.margelo.nitro.camera.CameraOrientation
@@ -16,7 +21,12 @@ import com.margelo.nitro.camera.MediaType
 import com.margelo.nitro.camera.MirrorMode
 import com.margelo.nitro.camera.extensions.surfaceRotation
 import com.margelo.nitro.camera.public.NativeCameraOutput
+import com.margelo.nitro.visioncamerafacedetection.extensions.FaceHelper
+import com.margelo.nitro.visioncamerafacedetection.extensions.TF_OD_API_INPUT_SIZE
+import com.margelo.nitro.visioncamerafacedetection.extensions.interpreter
 import com.margelo.nitro.visioncamerafacedetection.extensions.toMLFaceDetectorOptions
+import java.nio.ByteBuffer
+import java.nio.FloatBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -128,13 +138,32 @@ class HybridFaceScannerOutput(
       faceDetector
         .process(inputImage)
         .addOnSuccessListener { faces ->
+          if (faces.isEmpty()) {
+            options.onFaceScanned(emptyArray())
+            return@addOnSuccessListener
+          }
+          val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(inputImage)
+          val bmpFaceResult =
+            createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE)
+          val faceBB = RectF(faces[0].boundingBox)
+          val cvFace = Canvas(bmpFaceResult)
+          val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()
+          val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
+          val matrix = Matrix()
+          matrix.postTranslate(-faceBB.left, -faceBB.top)
+          matrix.postScale(sx, sy)
+          cvFace.drawBitmap(bmpFrameResult, matrix, null)
+          val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceResult)
+          val output: FloatBuffer = FloatBuffer.allocate(192)
+          interpreter?.run(input, output)
+          val arrayData: Array<String> = output.array().map { it.toString() }.toTypedArray()
           val hybridFaces =
             faces
               .map {
                 HybridFace(
                   it, config,
                   base64 = "",
-                  data = emptyArray(),
+                  data = arrayData,
                   message = "Successfully Get Face"
                 )
               }
