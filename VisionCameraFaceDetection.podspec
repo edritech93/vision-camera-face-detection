@@ -21,6 +21,8 @@ Pod::Spec.new do |s|
 
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
+  s.dependency "GoogleMLKit/FaceDetection" , "8.0.0"
+  s.dependency "VisionCamera"
 
   load 'nitrogen/generated/ios/VisionCameraFaceDetection+autolinking.rb'
   add_nitrogen_files(s)
