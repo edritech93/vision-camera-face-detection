@@ -38,6 +38,7 @@ import { getPermissionReadStorage } from './permission';
 export default function App() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const { width: widthScreen, height: heightScreen } = useWindowDimensions();
+  const [autoMode, setAutoMode] = useState<boolean>(true);
   const [cameraMounted, setCameraMounted] = useState<boolean>(false);
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
   const [facingFront, setFacingFront] = useState<boolean>(true);
@@ -208,7 +209,7 @@ export default function App() {
                     console.error(`Failed to detect faces!`, error);
                   }}
                   {...faceDetectorOptions}
-                  autoMode={true}
+                  autoMode={autoMode}
                   cameraFacing={facingFront ? 'front' : 'back'}
                 />
                 <Animated.View style={boundingBoxStyle}>
@@ -252,6 +253,10 @@ export default function App() {
           <Button
             onPress={() => setFacingFront((current) => !current)}
             title={'Toggle Cam'}
+          />
+          <Button
+            onPress={() => setAutoMode((current) => !current)}
+            title={`${autoMode ? 'Disable' : 'Enable'} AutoMode`}
           />
         </View>
         <View style={styles.wrapBtn}>

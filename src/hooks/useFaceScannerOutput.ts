@@ -53,6 +53,8 @@ import type { FaceScannerOutputOptions } from '../specs/FaceScannerFactory.nitro
 export function useFaceScannerOutput({
   onFaceScanned,
   onError,
+  outputResolution = 'preview',
+  ...options
 }: FaceScannerOutputOptions): CameraOutput {
   const stableOnFaceScanned = useRef(onFaceScanned);
   stableOnFaceScanned.current = onFaceScanned;
@@ -69,7 +71,9 @@ export function useFaceScannerOutput({
         onError(error) {
           stableOnError.current(error);
         },
+        outputResolution: outputResolution,
+        ...options,
       }),
-    []
+    [options, outputResolution]
   );
 }
