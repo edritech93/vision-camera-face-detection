@@ -10421,18 +10421,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-worklets-core@npm:^1.6.3":
-  version: 1.6.3
-  resolution: "react-native-worklets-core@npm:1.6.3"
-  dependencies:
-    string-hash-64: "npm:^1.0.3"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/712011f611cca7e982e1d776d8219b03092ea0bfe468d77da1d03b2c5513eb545ad004b550f88deee2c1e325a902c5a5117c325e6a5827bbbb659b012ced6011
-  languageName: node
-  linkType: hard
-
 "react-native-worklets@npm:^0.8.3":
   version: 0.8.3
   resolution: "react-native-worklets@npm:0.8.3"
@@ -11277,13 +11265,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"string-hash-64@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "string-hash-64@npm:1.0.3"
-  checksum: 10c0/ac175f71b383af1487ab16b4cc1b42b5302bea08bdf1cc1ea04bacb293fb9b35afc6c58260e1fc728627e7265519da01976822a188d493d7e7625b9628173ea3
-  languageName: node
-  linkType: hard
-
 "string-length@npm:^4.0.2":
   version: 4.0.2
   resolution: "string-length@npm:4.0.2"
@@ -12076,7 +12057,6 @@ __metadata:
     react-native-vision-camera: "npm:^5.0.10"
     react-native-vision-camera-worklets: "npm:^5.0.10"
     react-native-worklets: "npm:^0.8.3"
-    react-native-worklets-core: "npm:^1.6.3"
   languageName: unknown
   linkType: soft
 
