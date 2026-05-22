@@ -6,7 +6,8 @@ import VisionCamera
 
 class HybridFaceScannerOutput: 
 HybridCameraOutputSpec, 
-NativeCameraOutput {
+  NativeCameraOutput {
+
   private let queue: DispatchQueue
   private let onFacesDetected: (_ faces: [any HybridFaceSpec]) -> Void
   private let onError: (_ error: Error) -> Void
@@ -54,7 +55,7 @@ NativeCameraOutput {
     super.init()
 
     self.delegate = FaceScannerDelegate(onSampleBuffer: { [weak self] buffer in
-      self?.detectFaces(buffer)
+      self?.scanFaces(buffer)
     })
     self.output.setSampleBufferDelegate(delegate, queue: queue)
     self.output.alwaysDiscardsLateVideoFrames = true
@@ -64,7 +65,7 @@ NativeCameraOutput {
     }
   }
 
-  private func detectFaces(_ buffer: CMSampleBuffer) {
+  private func scanFaces(_ buffer: CMSampleBuffer) {
     if isBusy { return }
 
     isBusy = true

@@ -31,7 +31,7 @@ class HybridFaceScanner: HybridFaceScannerSpec {
     super.init()
   }
 
-  func detectFaces(
+  func scanFaces(
     frame: any HybridFrameSpec
   ) throws -> [any HybridFaceSpec] {
     let image = try frame.toMLImage(
