@@ -2051,6 +2051,15 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - TensorFlowLiteC (2.17.0):
+    - TensorFlowLiteC/Core (= 2.17.0)
+  - TensorFlowLiteC/Core (2.17.0)
+  - TensorFlowLiteSwift (2.17.0):
+    - TensorFlowLiteSwift/Core (= 2.17.0)
+  - TensorFlowLiteSwift/Core (2.17.0):
+    - TensorFlowLiteC (= 2.17.0)
+    - TensorFlowLiteSwift/Privacy (= 2.17.0)
+  - TensorFlowLiteSwift/Privacy (2.17.0)
   - VisionCamera (5.0.10):
     - hermes-engine
     - NitroImage
@@ -2100,6 +2109,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
+    - TensorFlowLiteSwift (~> 2.17.0)
     - VisionCamera
     - Yoga
   - VisionCameraWorklets (5.0.10):
@@ -2229,6 +2239,8 @@ SPEC REPOS:
     - MLKitVision
     - nanopb
     - PromisesObjC
+    - TensorFlowLiteC
+    - TensorFlowLiteSwift
 
 EXTERNAL SOURCES:
   FBLazyVector:
@@ -2490,8 +2502,10 @@ SPEC CHECKSUMS:
   RNPermissions: 431207f7a72c0e8e58c712b7e38e4b5fbb0179de
   RNReanimated: 741199421d3dfc8ebef2b69e4f969f5f42b29638
   RNWorklets: 32b9ca9e0588b838ce3202a9ea3971f553c9011c
+  TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73
+  TensorFlowLiteSwift: 723fe42222815e72490c79feeff05305530de393
   VisionCamera: f0a3f867f28ad9259bbee0645e5c816b5f715d7c
-  VisionCameraFaceDetection: c67e36143830eac7249c916125303ffab4607ef9
+  VisionCameraFaceDetection: 5d6f7bb240bed64d3ed22e9da562a3847cf6f001
   VisionCameraWorklets: 6b59dc35f6d79c82a686f5b12e897193b779b4b3
   Yoga: a6fdd7fe90a3d33fb1638cf609f26cb0400a12ad
 
