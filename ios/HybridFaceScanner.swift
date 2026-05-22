@@ -62,7 +62,10 @@ class HybridFaceScanner: HybridFaceScannerSpec {
     return faces.map {
       HybridFace(
         face: $0,
-        config: config
+        config: config,
+        base64: nil,
+        data: nil,
+        message: "Successfully Get Face"
       )
     }
   }

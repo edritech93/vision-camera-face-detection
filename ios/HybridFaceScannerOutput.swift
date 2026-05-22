@@ -102,8 +102,11 @@ NativeCameraOutput {
         let hybridFaces: [any HybridFaceSpec] = faces.map { 
           HybridFace(
             face: $0,
-            config: config
-          ) 
+            config: config,
+            base64: nil,
+            data: nil,
+            message: "Successfully Get Face"
+          )
         }
         self.onFacesDetected(hybridFaces)
       }

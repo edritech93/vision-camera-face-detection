@@ -46,13 +46,22 @@ struct FaceProcessConfig {
 final class HybridFace: HybridFaceSpec {
   private let face: Face
   private let config: FaceProcessConfig
+  let base64: String?
+  let data: [String]?
+  let message: String?
 
   init(
     face: Face,
-    config: FaceProcessConfig
+    config: FaceProcessConfig,
+    base64: String? = nil,
+    data: [String]? = nil,
+    message: String? = nil
   ) {
     self.face = face
     self.config = config
+    self.base64 = base64
+    self.data = data
+    self.message = message
     super.init()
   }
 

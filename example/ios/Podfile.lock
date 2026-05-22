@@ -72,7 +72,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - NitroModules (0.35.6):
+  - NitroModules (0.35.7):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1477,6 +1477,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-worklets-core (1.6.3):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - React-NativeModulesApple (0.85.0):
     - hermes-engine
     - React-callinvoker
@@ -2029,7 +2051,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - VisionCamera (5.0.9):
+  - VisionCamera (5.0.10):
     - hermes-engine
     - NitroImage
     - NitroModules
@@ -2054,7 +2076,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - VisionCameraFaceDetection (0.1.0):
+  - VisionCameraFaceDetection (3.0.0):
     - GoogleMLKit/FaceDetection (= 8.0.0)
     - hermes-engine
     - NitroModules
@@ -2080,7 +2102,7 @@ PODS:
     - ReactNativeDependencies
     - VisionCamera
     - Yoga
-  - VisionCameraWorklets (5.0.9):
+  - VisionCameraWorklets (5.0.10):
     - hermes-engine
     - NitroModules
     - RCTRequired
@@ -2151,6 +2173,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-worklets-core (from `../node_modules/react-native-worklets-core`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../node_modules/react-native/ReactCommon/react/networking`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2291,6 +2314,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-worklets-core:
+    :path: "../node_modules/react-native-worklets-core"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-networking:
@@ -2388,7 +2413,7 @@ SPEC CHECKSUMS:
   MLKitVision: fa8dea9012ac59497c79ddbe9ebf32051047ac4c
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NitroImage: 90b9bc94d0d6e9ec703717afcdcff08c9e6ba0da
-  NitroModules: 57e18f523d0ba77514f79de1552b8d06b00dc012
+  NitroModules: f19657f9358afc2de582303705230b928809509a
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCTDeprecation: 3bb167081b134461cfeb875ff7ae1945f8635257
   RCTRequired: 74839f55d5058a133a0bc4569b0afec750957f64
@@ -2427,6 +2452,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: e03488971b006c7f1f0bbbb6c6aabb65a85cf71b
   React-microtasksnativemodule: 7f22707d9d8df1e27f24a10a62409b2f7de8ce0a
   react-native-image-picker: 9dce42d17f5917de55bdff39a587390fd496beda
+  react-native-worklets-core: 78e7ad185d2fb75838e23d84049f4ef1ec7ee15a
   React-NativeModulesApple: 203fb2f050c7949cb500df1ac8bf7c09e8030fca
   React-networking: b1d990613576162f4b52c37164084d3f9a0a54da
   React-oscompat: 5361d0fa7905ba1c3b3c5e7c464d6be9d2d85f4b
@@ -2464,9 +2490,9 @@ SPEC CHECKSUMS:
   RNPermissions: 431207f7a72c0e8e58c712b7e38e4b5fbb0179de
   RNReanimated: 741199421d3dfc8ebef2b69e4f969f5f42b29638
   RNWorklets: 32b9ca9e0588b838ce3202a9ea3971f553c9011c
-  VisionCamera: f49d3b1919145f62aecfc8067d5cbfcb446f0b63
-  VisionCameraFaceDetection: 36940973fe9fd1b1bc94cf483a60a750e3043b1f
-  VisionCameraWorklets: 04bd3086ef423adefac30279144b962a30ef686e
+  VisionCamera: f0a3f867f28ad9259bbee0645e5c816b5f715d7c
+  VisionCameraFaceDetection: c67e36143830eac7249c916125303ffab4607ef9
+  VisionCameraWorklets: 6b59dc35f6d79c82a686f5b12e897193b779b4b3
   Yoga: a6fdd7fe90a3d33fb1638cf609f26cb0400a12ad
 
 PODFILE CHECKSUM: 766bfdf7c67997d8600ea6aee825fd1141f9b6d9
