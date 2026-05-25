@@ -32,6 +32,7 @@ HybridCameraOutputSpec,
       Size(width: 720.0, height: 1280.0)
     )
   }
+  var currentResolution: Size? = Size(width: 720.0, height: 1280.0)
   private let orientationManager = FaceDetectorOrientation()
   private let faceDetector: FaceDetector
 
