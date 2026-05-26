@@ -14,7 +14,7 @@ class HybridFaceScanner: HybridFaceScannerSpec {
   private let windowWidth: Double
   private let windowHeight: Double
   private let faceDetector: FaceDetector
-
+  
   init(options: FaceScannerOptions) {
     self.runLandmarks = options.runLandmarks ?? false
     self.runContours = options.runContours ?? false
@@ -27,10 +27,10 @@ class HybridFaceScanner: HybridFaceScannerSpec {
     self.faceDetector = FaceDetector.faceDetector(
       options: options.toMLFaceDetectorOptions()
     )
-
+    
     super.init()
   }
-
+  
   func scanFaces(
     frame: any HybridFrameSpec
   ) throws -> [any HybridFaceSpec] {
@@ -57,7 +57,7 @@ class HybridFaceScanner: HybridFaceScannerSpec {
       cameraFacing: cameraFacing,
       orientation: orientationManager.orientation
     )
-
+    
     let faces = try faceDetector.results(in: image)
     return faces.map {
       HybridFace(

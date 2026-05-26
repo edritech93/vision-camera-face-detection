@@ -15,7 +15,7 @@ struct FaceProcessConfig {
   let autoMode: Bool?
   let cameraFacing: CameraPosition?
   let orientation: UIInterfaceOrientation?
-
+  
   init(
     width: Double,
     height: Double,
@@ -49,7 +49,7 @@ final class HybridFace: HybridFaceSpec {
   let base64: String?
   let data: [String]?
   let message: String?
-
+  
   init(
     face: Face,
     config: FaceProcessConfig,
@@ -64,7 +64,7 @@ final class HybridFace: HybridFaceSpec {
     self.message = message
     super.init()
   }
-
+  
   private func processBoundingBox(
     _ boundingBox: CGRect
   ) -> Bounds {
@@ -73,14 +73,14 @@ final class HybridFace: HybridFaceSpec {
     var width: Double
     var height: Double
     switch config.orientation {
-      case .landscapeLeft, .landscapeRight:
-        width = boundingBox.height * scaleY
-        height = boundingBox.width * scaleX
-      default:
-        width = boundingBox.width * scaleX
-        height = boundingBox.height * scaleY
+    case .landscapeLeft, .landscapeRight:
+      width = boundingBox.height * scaleY
+      height = boundingBox.width * scaleX
+    default:
+      width = boundingBox.width * scaleX
+      height = boundingBox.height * scaleY
     }
-
+    
     return Bounds(
       width: width,
       height: height,
@@ -88,27 +88,27 @@ final class HybridFace: HybridFaceSpec {
       y: boundingBox.minX * scaleY
     )
   }
-
+  
   private func processLandmarks(
-      _ face: Face
+    _ face: Face
   ) -> Landmarks {
     let scaleX = config.scaleX
     let scaleY = config.scaleY
-
+    
     func getPoint(
       _ type: FaceLandmarkType
     ) -> Point? {
       guard let landmark = face.landmark(ofType: type) else {
         return nil
       }
-
+      
       let position = landmark.position
       return Point(
         x: Double(position.y) * scaleX,
         y: Double(position.x) * scaleY
       )
     }
-
+    
     return Landmarks(
       LEFT_CHEEK: getPoint(.leftCheek),
       LEFT_EAR: getPoint(.leftEar),
@@ -122,20 +122,20 @@ final class HybridFace: HybridFaceSpec {
       RIGHT_EYE: getPoint(.rightEye)
     )
   }
-
+  
   private func processFaceContours(
     _ face: Face
   ) -> Contours {
     let scaleX = config.scaleX
     let scaleY = config.scaleY
-
+    
     func getContour(
-        _ type: FaceContourType
+      _ type: FaceContourType
     ) -> [Point]? {
       guard let contour = face.contour(ofType: type) else {
         return nil
       }
-
+      
       return contour.points.map { point in
         return Point(
           x: Double(point.y) * scaleX, 
@@ -143,7 +143,7 @@ final class HybridFace: HybridFaceSpec {
         )
       }
     }
-
+    
     return Contours(
       FACE: getContour(.face),
       LEFT_EYEBROW_TOP: getContour(.leftEyebrowTop),
@@ -162,50 +162,50 @@ final class HybridFace: HybridFaceSpec {
       RIGHT_CHEEK: getContour(.rightCheek)
     )
   }
-
+  
   var bounds: Bounds {
     processBoundingBox(face.frame)
   }
-
+  
   var landmarks: Landmarks? {
     config.runLandmarks ?
     processLandmarks(face): nil
   }
-
+  
   var contours: Contours? {
     config.runContours ?
     processFaceContours(face) : nil
   }
-
+  
   var leftEyeOpenProbability: Double? {
     config.runClassifications ?
     face.leftEyeOpenProbability : nil
   }
-
+  
   var rightEyeOpenProbability: Double? {
     config.runClassifications ?
     face.rightEyeOpenProbability : nil
   }
-
+  
   var smilingProbability: Double? {
     config.runClassifications ?
     face.smilingProbability : nil
   }
-
+  
   var trackingId: Double? {
     config.trackingEnabled ?
     Double(face.trackingID) : nil
   }
-
+  
   var pitchAngle: Double {
     return face.headEulerAngleX
   }
-
+  
   var rollAngle: Double {
     return face.headEulerAngleZ
   }
-
-   var yawAngle: Double {
+  
+  var yawAngle: Double {
     return face.headEulerAngleY
   }
 }

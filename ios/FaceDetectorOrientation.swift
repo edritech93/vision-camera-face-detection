@@ -16,13 +16,13 @@ final class FaceDetectorOrientation {
       }
     }
   }
-    
+  
   init() {
     // default value
     orientation = .portrait
     startDeviceOrientationListener()
   }
-    
+  
   deinit {
     stopDeviceOrientationListener()
   }
@@ -58,12 +58,12 @@ extension CMAccelerometerData {
     let xNorm = Swift.abs(acceleration.x)
     let yNorm = Swift.abs(acceleration.y)
     let zNorm = Swift.abs(acceleration.z)
-
+    
     // If the z-axis is greater than the other axes, the phone is flat.
     if zNorm > xNorm && zNorm > yNorm {
       return .portrait
     }
-
+    
     if xNorm > yNorm {
       if acceleration.x > 0 {
         return .landscapeRight

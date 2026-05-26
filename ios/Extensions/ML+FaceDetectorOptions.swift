@@ -26,6 +26,19 @@ extension FaceScannerOutputOptions {
   }
 }
 
+extension TensorFaceOptions {
+  func toMLFaceDetectorOptions() -> MLKitFaceDetection.FaceDetectorOptions {
+    buildMLFaceDetectorOptions(
+      performanceMode: performanceMode,
+      runLandmarks: runLandmarks,
+      runContours: runContours,
+      runClassifications: runClassifications,
+      minFaceSize: minFaceSize,
+      trackingEnabled: trackingEnabled
+    )
+  }
+}
+
 private func buildMLFaceDetectorOptions(
     performanceMode: Any?,
     runLandmarks: Bool?,

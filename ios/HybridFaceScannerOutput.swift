@@ -5,9 +5,9 @@ import NitroModules
 import VisionCamera
 
 class HybridFaceScannerOutput: 
-HybridCameraOutputSpec, 
-  NativeCameraOutput {
-
+  HybridCameraOutputSpec, 
+    NativeCameraOutput {
+  
   private let queue: DispatchQueue
   private let onFacesDetected: (_ faces: [any HybridFaceSpec]) -> Void
   private let onError: (_ error: Error) -> Void
@@ -35,7 +35,7 @@ HybridCameraOutputSpec,
   var currentResolution: Size? = Size(width: 720.0, height: 1280.0)
   private let orientationManager = FaceDetectorOrientation()
   private let faceDetector: FaceDetector
-
+  
   init(options: FaceScannerOutputOptions) {
     self.queue = DispatchQueue(label: "FaceScannerQueue")
     self.output = AVCaptureVideoDataOutput()
@@ -54,7 +54,7 @@ HybridCameraOutputSpec,
     )
     
     super.init()
-
+    
     self.delegate = FaceScannerDelegate(onSampleBuffer: { [weak self] buffer in
       self?.scanFaces(buffer)
     })
@@ -65,10 +65,10 @@ HybridCameraOutputSpec,
       self.output.deliversPreviewSizedOutputBuffers = true
     }
   }
-
+  
   private func scanFaces(_ buffer: CMSampleBuffer) {
     if isBusy { return }
-
+    
     isBusy = true
     guard let image = MLImage(sampleBuffer: buffer) else {
       isBusy = false
@@ -96,7 +96,7 @@ HybridCameraOutputSpec,
       cameraFacing: cameraFacing,
       orientation: orientationManager.orientation
     )
-
+    
     self.faceDetector.process(image) { [weak self] faces, error in
       guard let self else { return }
       self.isBusy = false
@@ -117,7 +117,7 @@ HybridCameraOutputSpec,
       }
     }
   }
-
+  
   func configure(config: CameraOutputConfiguration) {
     guard let connection = self.output.connection(with: .video) else {
       return
