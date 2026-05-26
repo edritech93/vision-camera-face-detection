@@ -64,16 +64,45 @@ class HybridTensor: HybridTensorFactorySpec {
     let mlImage = VisionImage(image: uiImage)
     mlImage.orientation = .up
     let faces = try faceDetector.results(in: mlImage)
-    if (faces.isEmpty) {
-      throw RuntimeError("No face detected")
+    guard let face = faces.first else {
+      throw RuntimeError.error(withMessage: "No face detected")
     }
-    let face = faces[0]
+    guard let interpreter = interpreter else {
+      throw RuntimeError.error(
+        withMessage: "Interpreter is not initialized. Call initTensor() first."
+      )
+    }
+    guard let imageCrop = FaceHelper.getImageFaceFromUIImage(
+      from: uiImage,
+      rectImage: face.frame
+    ) else {
+      throw RuntimeError.error(withMessage: "Failed to crop face image")
+    }
+    guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(
+      image: imageCrop,
+      size: inputWidth
+    ) else {
+      throw RuntimeError.error(withMessage: "Failed to create pixel buffer")
+    }
+    guard let rgbData = FaceHelper.rgbDataFromBuffer(pixelBuffer) else {
+      throw RuntimeError.error(
+        withMessage: "Failed to convert the image buffer to RGB data"
+      )
+    }
+    try interpreter.copy(rgbData, toInputAt: 0)
+    try interpreter.invoke()
+
+    let outputTensor = try interpreter.output(at: 0)
+    let embedding: [Float] = [Float32](unsafeData: outputTensor.data) ?? []
+    let data = embedding.map { String($0) }
+    let base64 = FaceHelper.convertImageToBase64(image: imageCrop)
+
     return .second(
       HybridFace(
         face: face,
         config: config,
-        base64: nil,
-        data: nil,
+        base64: base64,
+        data: data,
         message: "Successfully Get Face"
       )
     )
