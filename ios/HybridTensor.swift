@@ -19,7 +19,7 @@ class HybridTensor: HybridTensorFactorySpec {
     do {
       var options = Interpreter.Options()
       options.threadCount = 1
-      interpreter = try Interpreter(modelPath: "mobile_face_net", options: options)
+      interpreter = try Interpreter(modelPath: modelPath, options: options)
       try interpreter?.allocateTensors()
       return "initialization tflite success"
     } catch let error {
