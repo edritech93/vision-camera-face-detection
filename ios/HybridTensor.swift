@@ -35,8 +35,6 @@ class HybridTensor: HybridTensorFactorySpec {
     let trackingEnabled = options.trackingEnabled ?? false
     let autoMode = options.autoMode ?? false
     let cameraFacing = options.cameraFacing ?? .front
-    let windowWidth = options.windowWidth ?? 1.0
-    let windowHeight = options.windowHeight ?? 1.0
     let faceDetector = FaceDetector.faceDetector(
       options: options.toMLFaceDetectorOptions()
     )
@@ -63,9 +61,9 @@ class HybridTensor: HybridTensorFactorySpec {
       cameraFacing: cameraFacing,
       orientation: orientationManager.orientation
     )
-    let image = VisionImage(image: uiImage)
-    image.orientation = .up
-    let faces = try faceDetector.results(in: image)
+    let mlImage = VisionImage(image: uiImage)
+    mlImage.orientation = .up
+    let faces = try faceDetector.results(in: mlImage)
     if (faces.isEmpty) {
       throw RuntimeError("No face detected")
     }

@@ -27,7 +27,6 @@ class HybridFaceScanner: HybridFaceScannerSpec {
     self.faceDetector = FaceDetector.faceDetector(
       options: options.toMLFaceDetectorOptions()
     )
-    
     super.init()
   }
   

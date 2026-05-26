@@ -52,9 +52,7 @@ class HybridFaceScannerOutput:
     self.faceDetector = FaceDetector.faceDetector(
       options: options.toMLFaceDetectorOptions()
     )
-    
     super.init()
-    
     self.delegate = FaceScannerDelegate(onSampleBuffer: { [weak self] buffer in
       self?.scanFaces(buffer)
     })
@@ -68,7 +66,6 @@ class HybridFaceScannerOutput:
   
   private func scanFaces(_ buffer: CMSampleBuffer) {
     if isBusy { return }
-    
     isBusy = true
     guard let image = MLImage(sampleBuffer: buffer) else {
       isBusy = false
@@ -96,7 +93,6 @@ class HybridFaceScannerOutput:
       cameraFacing: cameraFacing,
       orientation: orientationManager.orientation
     )
-    
     self.faceDetector.process(image) { [weak self] faces, error in
       guard let self else { return }
       self.isBusy = false
