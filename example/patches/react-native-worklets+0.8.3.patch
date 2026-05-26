@@ -1,0 +1,14 @@
+diff --git a/node_modules/react-native-worklets/apple/worklets/apple/WorkletsMessageThread.h b/node_modules/react-native-worklets/apple/worklets/apple/WorkletsMessageThread.h
+index 822312c..6a8e05f 100644
+--- a/node_modules/react-native-worklets/apple/worklets/apple/WorkletsMessageThread.h
++++ b/node_modules/react-native-worklets/apple/worklets/apple/WorkletsMessageThread.h
+@@ -1,7 +1,8 @@
+ #pragma once
+ 
+ #import <Foundation/Foundation.h>
+-#import <React/RCTMessageThread.h>
++#import "RCTMessageThread.h"
++
+ 
+ namespace facebook {
+ namespace react {
