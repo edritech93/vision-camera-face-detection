@@ -134,17 +134,17 @@ class HybridFaceScannerOutput:
           let outputTensor = try interpreter.output(at: 0)
           let embedding: [Float] = [Float32](unsafeData: outputTensor.data) ?? []
           let data = embedding.map { String($0) }
-          var base64: String? = nil
-          let ciImage = CIImage(cvPixelBuffer: imageCrop)
-          if let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent) {
-            base64 = FaceHelper.convertImageToBase64(
-              image: UIImage(cgImage: cgImage, scale: 1.0, orientation: image.orientation)
-            )
-          }
+          // var base64: String? = nil
+          // let ciImage = CIImage(cvPixelBuffer: imageCrop)
+          // if let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent) {
+          //   base64 = FaceHelper.convertImageToBase64(
+          //     image: UIImage(cgImage: cgImage, scale: 1.0, orientation: image.orientation)
+          //   )
+          // }
           return HybridFace(
             face: face,
             config: config,
-            base64: base64,
+            base64: "",
             data: data,
             message: "Successfully Get Face"
           )
