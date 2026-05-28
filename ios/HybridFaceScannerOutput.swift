@@ -1,12 +1,14 @@
 import AVFoundation
+import CoreImage
 import MLKitFaceDetection
 import MLKitVision
 import NitroModules
+import UIKit
 import VisionCamera
 
-class HybridFaceScannerOutput: 
-  HybridCameraOutputSpec, 
-    NativeCameraOutput {
+class HybridFaceScannerOutput:
+  HybridCameraOutputSpec,
+  NativeCameraOutput {
   
   private let queue: DispatchQueue
   private let onFacesDetected: (_ faces: [any HybridFaceSpec]) -> Void
@@ -43,7 +45,7 @@ class HybridFaceScannerOutput:
     self.onError = options.onError
     self.autoMode = options.autoMode ?? false
     self.windowWidth = options.windowWidth ?? 1.0
-    self.windowHeight = options.windowHeight ?? 1.0 
+    self.windowHeight = options.windowHeight ?? 1.0
     self.runLandmarks = options.runLandmarks ?? false
     self.runContours = options.runContours ?? false
     self.runClassifications = options.runClassifications ?? false
@@ -64,7 +66,7 @@ class HybridFaceScannerOutput:
     }
   }
   
-  private func scanFaces(_ buffer: CMSampleBuffer) {
+  private func scanFaces(_ buffer: CMSampleBuffer)  {
     if isBusy { return }
     isBusy = true
     guard let image = MLImage(sampleBuffer: buffer) else {
@@ -96,20 +98,63 @@ class HybridFaceScannerOutput:
     self.faceDetector.process(image) { [weak self] faces, error in
       guard let self else { return }
       self.isBusy = false
-      if let faces {
-        let hybridFaces: [any HybridFaceSpec] = faces.map { 
-          HybridFace(
-            face: $0,
-            config: config,
-            base64: nil,
-            data: nil,
-            message: "Successfully Get Face"
-          )
-        }
-        self.onFacesDetected(hybridFaces)
-      }
       if let error {
         self.onError(error)
+        return
+      }
+      guard let faces, !faces.isEmpty else {
+        return
+      }
+      let hybridFaces: [any HybridFaceSpec] = faces.compactMap { face -> HybridFace? in
+        guard let interpreter = interpreter else {
+          self.onError(RuntimeError.error(
+            withMessage: "Interpreter is not initialized. Call initTensor() first."
+          ))
+          return nil
+        }
+        guard let imageCrop = FaceHelper.getImageFaceFromBuffer(
+          from: buffer,
+          rectImage: face.frame,
+          orientation: image.orientation
+        ) else {
+          self.onError(RuntimeError.error(
+            withMessage: "Failed to crop face image from buffer"
+          ))
+          return nil
+        }
+        guard let rgbData = FaceHelper.rgbDataFromBuffer(imageCrop) else {
+          self.onError(RuntimeError.error(
+            withMessage: "Failed to convert the image buffer to RGB data"
+          ))
+          return nil
+        }
+        do {
+          try interpreter.copy(rgbData, toInputAt: 0)
+          try interpreter.invoke()
+          let outputTensor = try interpreter.output(at: 0)
+          let embedding: [Float] = [Float32](unsafeData: outputTensor.data) ?? []
+          let data = embedding.map { String($0) }
+          var base64: String? = nil
+          let ciImage = CIImage(cvPixelBuffer: imageCrop)
+          if let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent) {
+            base64 = FaceHelper.convertImageToBase64(
+              image: UIImage(cgImage: cgImage, scale: 1.0, orientation: image.orientation)
+            )
+          }
+          return HybridFace(
+            face: face,
+            config: config,
+            base64: base64,
+            data: data,
+            message: "Successfully Get Face"
+          )
+        } catch {
+          self.onError(error)
+          return nil
+        }
+      }
+      if !hybridFaces.isEmpty {
+        self.onFacesDetected(hybridFaces)
       }
     }
   }

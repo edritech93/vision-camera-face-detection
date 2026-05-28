@@ -63,7 +63,7 @@ class HybridTensor: HybridTensorFactorySpec {
     )
     let mlImage = VisionImage(image: uiImage)
     mlImage.orientation = .up
-    let faces = try faceDetector.results(in: mlImage)
+    let faces: [Face] = try faceDetector.results(in: mlImage)
     guard let face = faces.first else {
       throw RuntimeError.error(withMessage: "No face detected")
     }
@@ -91,12 +91,12 @@ class HybridTensor: HybridTensorFactorySpec {
     }
     try interpreter.copy(rgbData, toInputAt: 0)
     try interpreter.invoke()
-
+    
     let outputTensor = try interpreter.output(at: 0)
     let embedding: [Float] = [Float32](unsafeData: outputTensor.data) ?? []
     let data = embedding.map { String($0) }
     let base64 = FaceHelper.convertImageToBase64(image: imageCrop)
-
+    
     return .second(
       HybridFace(
         face: face,
