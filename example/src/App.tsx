@@ -100,7 +100,7 @@ export default function App() {
   }, [hasPermission, requestPermission]);
 
   useEffect(() => {
-    initTensor('mobile_face_net', 1)
+    initTensor('facenet_512', 1)
       .then((response: any) => console.log(response))
       .catch((error: any) => console.log(error));
   }, []);

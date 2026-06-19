@@ -86,7 +86,7 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
         matrix.postScale(sx, sy)
         cvFace.drawBitmap(bmpStorageResult, matrix, null)
         val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceStorage)
-        val output: FloatBuffer = FloatBuffer.allocate(192)
+        val output: FloatBuffer = FloatBuffer.allocate(512)
         interpreter?.run(input, output)
         val arrayData = Arguments.createArray()
         for (i: Float in output.array()) {

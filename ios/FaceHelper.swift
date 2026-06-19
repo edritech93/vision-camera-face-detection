@@ -9,8 +9,8 @@ import TensorFlowLite
 
 let batchSize = 1
 let inputChannels = 1
-let inputWidth = 112
-let inputHeight = 112
+let inputWidth = 160
+let inputHeight = 160
 
 // TensorFlow Lite `Interpreter` object for performing inference on a given model.
 var interpreter: Interpreter? = nil
