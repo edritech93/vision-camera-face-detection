@@ -45,7 +45,7 @@ export default function App() {
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
-  const [distanceNum, setDistanceNum] = useState<number>(2);
+  const distanceNum = useRef<number>(2);
 
   const faceDetectorOptions = useRef<FaceScannerOptions>({
     performanceMode: 'fast',
@@ -186,7 +186,8 @@ export default function App() {
           const diff = arrayCamera[i] - knownEmb[i];
           distance += diff * diff;
         }
-        setDistanceNum(distance);
+        distanceNum.current = distance;
+        console.log(`Distance: ${distanceNum.current}`);
       }
     }
   };
@@ -213,7 +214,7 @@ export default function App() {
                   cameraFacing={facingFront ? 'front' : 'back'}
                 />
                 <Animated.View style={boundingBoxStyle}>
-                  <Text style={styles.textDistance}>{distanceNum}</Text>
+                  <Text style={styles.textDistance}>{distanceNum.current}</Text>
                 </Animated.View>
                 {cameraPaused && (
                   <Text style={styles.textPaused}>Camera is PAUSED</Text>
