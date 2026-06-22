@@ -8,6 +8,7 @@ import {
   Button,
   ActivityIndicator,
   Image,
+  TextInput,
 } from 'react-native';
 import {
   useCameraDevice,
@@ -23,6 +24,7 @@ import {
   type TensorFaceOptions,
 } from 'vision-camera-face-detection';
 import Animated, {
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -45,7 +47,14 @@ export default function App() {
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
-  const distanceNum = useRef<number>(2);
+  const distanceNum = useSharedValue<number>(2);
+  const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+  const distanceAnimatedProps = useAnimatedProps(() => {
+    return {
+      text: distanceNum.value.toFixed(5),
+    } as any;
+  });
 
   const faceDetectorOptions = useRef<FaceScannerOptions>({
     performanceMode: 'fast',
@@ -186,8 +195,8 @@ export default function App() {
           const diff = arrayCamera[i] - knownEmb[i];
           distance += diff * diff;
         }
-        distanceNum.current = distance;
-        console.log(`Distance: ${distanceNum.current}`);
+        distanceNum.value = distance;
+        console.log(`Distance: ${distanceNum.value}`);
       }
     }
   };
@@ -214,7 +223,12 @@ export default function App() {
                   cameraFacing={facingFront ? 'front' : 'back'}
                 />
                 <Animated.View style={boundingBoxStyle}>
-                  <Text style={styles.textDistance}>{distanceNum.current}</Text>
+                  <AnimatedTextInput
+                    editable={false}
+                    underlineColorAndroid={'transparent'}
+                    style={styles.textDistance}
+                    animatedProps={distanceAnimatedProps}
+                  />
                 </Animated.View>
                 {cameraPaused && (
                   <Text style={styles.textPaused}>Camera is PAUSED</Text>
@@ -323,6 +337,8 @@ const styles = StyleSheet.create({
   textDistance: {
     backgroundColor: 'rgb(0,255,0)',
     color: 'black',
+    paddingHorizontal: 8,
+    minWidth: 80,
   },
   imageBase64Face: {
     height: 100,
