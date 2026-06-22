@@ -31,7 +31,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 class HybridFaceScannerOutput(
-  private val options: FaceScannerOutputOptions
+  private val options: FaceScannerOutputOptions,
 ) : HybridCameraOutputSpec(),
   ImageAnalysis.Analyzer,
   NativeCameraOutput {
@@ -42,6 +42,8 @@ class HybridFaceScannerOutput(
       field = value
       imageAnalysis?.targetRotation = value.surfaceRotation
     }
+  override val currentResolution: com.margelo.nitro.camera.Size?
+    get() = com.margelo.nitro.camera.Size(1280.0, 720.0)
   private val context =
     NitroModules.applicationContext ?: throw Error("Face Scanner - No Context available!")
   private val orientationManager = FaceDetectorOrientation.get(context.applicationContext)
