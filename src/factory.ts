@@ -27,8 +27,8 @@ export function createFaceScannerOutput(
 const factoryTensor =
   NitroModules.createHybridObject<TensorFactory>('TensorFactory');
 
-export function initTensor(): string {
-  return factoryTensor.initTensor();
+export function initTensor(modelName: string): string {
+  return factoryTensor.initTensor(modelName);
 }
 
 export function detectFromBase64(options: TensorFaceOptions) {

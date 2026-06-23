@@ -156,7 +156,7 @@ class HybridFaceScannerOutput(
           matrix.postScale(sx, sy)
           cvFace.drawBitmap(bmpFrameResult, matrix, null)
           val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceResult)
-          val output: FloatBuffer = FloatBuffer.allocate(192)
+          val output: FloatBuffer = FloatBuffer.allocate(512)
           interpreter?.run(input, output)
           val arrayData: Array<String> = output.array().map { it.toString() }.toTypedArray()
           val hybridFaces =

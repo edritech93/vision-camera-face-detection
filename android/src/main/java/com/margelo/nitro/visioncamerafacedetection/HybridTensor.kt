@@ -27,9 +27,9 @@ class HybridTensor : HybridTensorFactorySpec() {
   private val context =
     NitroModules.applicationContext ?: throw Error("Face Tensor - No Context available!")
 
-  override fun initTensor(): String {
+  override fun initTensor(modelName: String): String {
     val assetManager = context.assets
-    val fileDescriptor = assetManager.openFd("mobile_face_net.tflite")
+    val fileDescriptor = assetManager.openFd("$modelName.tflite")
     val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
     val fileChannel = inputStream.channel
     val startOffset = fileDescriptor.startOffset
@@ -40,7 +40,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     options.numThreads = 1
     interpreter = Interpreter(byteFile, options)
     interpreter?.allocateTensors()
-    return "initialization tflite success"
+    return "initialization tflite success $modelName"
   }
 
   override fun detectFromBase64(options: TensorFaceOptions): Variant_NullType_HybridFaceSpec {
@@ -81,7 +81,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     matrix.postScale(sx, sy)
     cvFace.drawBitmap(bmpStorageResult, matrix, null)
     val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceStorage)
-    val output: FloatBuffer = FloatBuffer.allocate(192)
+    val output: FloatBuffer = FloatBuffer.allocate(512)
     interpreter?.run(input, output)
     val arrayData: Array<String> = output.array().map { it.toString() }.toTypedArray()
     return Variant_NullType_HybridFaceSpec.create(

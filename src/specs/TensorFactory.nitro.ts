@@ -35,11 +35,11 @@ export interface TensorFactory extends HybridObject<{
    * import type { TensorFactory } from 'vision-camera-face-detection'
    *
    * const tensor = NitroModules.createHybridObject<TensorFactory>('TensorFactory')
-   * const status = tensor.initTensor()
+   * const status = tensor.initTensor('modelName')
    * console.log('Tensor init status:', status)
    * ```
    */
-  initTensor(): string;
+  initTensor(modelName: string): string;
 
   /**
    * Run detection on a Base64-encoded image and return the decoded result.

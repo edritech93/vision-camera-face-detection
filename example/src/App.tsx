@@ -104,7 +104,7 @@ export default function App() {
 
   useEffect(() => {
     if (!hasPermission) return;
-    const result = initTensor();
+    const result = initTensor('facenet_512');
     console.log(`Tensor initialized with result: ${result}`);
   }, [hasPermission]);
 
