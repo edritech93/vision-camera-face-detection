@@ -10451,14 +10451,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-image@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "react-native-nitro-image@npm:0.15.0"
+"react-native-nitro-image@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "react-native-nitro-image@npm:0.15.1"
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-nitro-modules: "*"
-  checksum: 10c0/7af289336f0340a387f723a38e2533d7b121db5c146a339f0c0c49a3d2d9cd40935c06dff5a6dd8ab5eb633515d959211f727dddafd648f957476ee36903ea5c
+  checksum: 10c0/c8599543167ce1f53c838c2ec4a38923b617945d6dbea9717383a21688fa30d409f91a03a4d2645efa2fcd3523a4f06bdc97484507e99ebf10ac7236da55d735
   languageName: node
   linkType: hard
 
@@ -10472,9 +10472,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-permissions@npm:^5.5.2":
-  version: 5.5.2
-  resolution: "react-native-permissions@npm:5.5.2"
+"react-native-permissions@npm:^5.6.0":
+  version: 5.6.0
+  resolution: "react-native-permissions@npm:5.6.0"
   peerDependencies:
     react: "*"
     react-native: "*"
@@ -10482,21 +10482,21 @@ __metadata:
   peerDependenciesMeta:
     react-native-windows:
       optional: true
-  checksum: 10c0/cfed923008f976fefc8bc6bf3af1c6735e6de33ad58cfea0b1d9ee248f9e60f24db347e6d7343cc0ffe3d927c290f91f00f39bf9f0fd3fc51fc5737d846bd75d
+  checksum: 10c0/9f72a2ccec761dfe1c3064a2694f5c03bd51f216d9c2bcd358aa152b7219f93561bd48271f9323e204e670f1bb7fa3e260d0715167358a0ed7360a5f278e0dce
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:^4.4.1":
-  version: 4.4.1
-  resolution: "react-native-reanimated@npm:4.4.1"
+"react-native-reanimated@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "react-native-reanimated@npm:4.5.0"
   dependencies:
     react-native-is-edge-to-edge: "npm:^1.3.1"
     semver: "npm:^7.7.3"
   peerDependencies:
     react: "*"
     react-native: 0.83 - 0.86
-    react-native-worklets: 0.9.x
-  checksum: 10c0/400db6b846c23ee523a74a0b449d07358c6ec20e4ac6e08d867eec3488b1572a2809bc324d4c860479a3fed4e2d182f51146761f24457de07dd10756ffc6de97
+    react-native-worklets: 0.10.x
+  checksum: 10c0/2df754c030a90b9bdbbc5b9fdc9201821b9487f09e72399f7525a23dad95e864470de8ada5f38e28756f8de0c52956125bccb094cec71d5a850c93c83575224a
   languageName: node
   linkType: hard
 
@@ -10525,9 +10525,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-worklets@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "react-native-worklets@npm:0.9.1"
+"react-native-worklets@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "react-native-worklets@npm:0.10.0"
   dependencies:
     "@babel/plugin-transform-arrow-functions": "npm:^7.27.1"
     "@babel/plugin-transform-class-properties": "npm:^7.28.6"
@@ -10538,6 +10538,7 @@ __metadata:
     "@babel/plugin-transform-template-literals": "npm:^7.27.1"
     "@babel/plugin-transform-unicode-regex": "npm:^7.27.1"
     "@babel/preset-typescript": "npm:^7.28.5"
+    "@babel/types": "npm:^7.27.1"
     convert-source-map: "npm:^2.0.0"
     semver: "npm:^7.7.4"
   peerDependencies:
@@ -10545,7 +10546,7 @@ __metadata:
     "@react-native/metro-config": "*"
     react: "*"
     react-native: 0.83 - 0.86
-  checksum: 10c0/a3612d9c2b3613c789dc0b15ffe4e200681b8e64a715029748d29fb4176930765f1afb9fa4d625c02a2c136f3c331ab488e28fbb75e28295fa15edd4000195f3
+  checksum: 10c0/23144639390ac5d2326b0d088400584849f01eba629f0cbe2b627961c8829a4ee5092f5f4cc5008e00512837e8fbb3c73ea202c2e5ae8bb6312131822b6c9706
   languageName: node
   linkType: hard
 
@@ -12178,13 +12179,13 @@ __metadata:
     react-native-builder-bob: "npm:^0.41.0"
     react-native-image-picker: "npm:^8.2.1"
     react-native-monorepo-config: "npm:^0.3.3"
-    react-native-nitro-image: "npm:^0.15.0"
+    react-native-nitro-image: "npm:^0.15.1"
     react-native-nitro-modules: "npm:^0.35.9"
-    react-native-permissions: "npm:^5.5.2"
-    react-native-reanimated: "npm:^4.4.1"
+    react-native-permissions: "npm:^5.6.0"
+    react-native-reanimated: "npm:^4.5.0"
     react-native-vision-camera: "npm:^5.0.11"
     react-native-vision-camera-worklets: "npm:^5.0.11"
-    react-native-worklets: "npm:^0.9.1"
+    react-native-worklets: "npm:^0.10.0"
   languageName: unknown
   linkType: soft
 

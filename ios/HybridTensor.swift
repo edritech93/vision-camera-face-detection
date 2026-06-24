@@ -7,13 +7,13 @@ import AVFoundation
 import TensorFlowLite
 
 class HybridTensor: HybridTensorFactorySpec {
-  func initTensor() throws -> String {
+  func initTensor(modelName: String) throws -> String {
     guard let modelPath = Bundle.main.path(
-      forResource: "mobile_face_net",
+      forResource: modelName,
       ofType: "tflite"
     ) else {
       throw RuntimeError.error(
-        withMessage: "Failed to load the model file"
+        withMessage: "Failed to load the model file \(modelName)"
       )
     }
     do {
