@@ -35,8 +35,6 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 apply from: '../nitrogen/generated/android/visioncamerafacedetection+autolinking.gradle'
 
-apply plugin: "com.facebook.react"
-
 android {
   namespace "com.margelo.nitro.visioncamerafacedetection"
 
