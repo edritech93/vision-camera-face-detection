@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 var interpreter: Interpreter? = null
-const val TF_OD_API_INPUT_SIZE = 112
+const val TF_OD_API_INPUT_SIZE = 160
 
 class FaceHelper {
 
