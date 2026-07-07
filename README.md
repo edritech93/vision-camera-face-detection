@@ -1,341 +1,201 @@
 # vision-camera-face-detection
 
-A high-performance Face Detection plugin for [React Native Vision Camera](https://github.com/mrousavy/react-native-vision-camera) V4. Powered by Google ML Kit Face Detection for real-time face detection with landmarks, contours, classification, and TensorFlow Lite support for face recognition.
+Face Detection plugin for [react-native-vision-camera](https://github.com/mrousavy/react-native-vision-camera) v5, powered by [Google ML Kit](https://developers.google.com/ml-kit/vision/face-detection) and [Nitro Modules](https://nitro.margelo.com/).
 
-[![npm version](https://img.shields.io/npm/v/vision-camera-face-detection.svg)](https://www.npmjs.com/package/vision-camera-face-detection)
-[![license](https://img.shields.io/npm/l/vision-camera-face-detection.svg)](https://github.com/edritech93/vision-camera-face-detection/blob/main/LICENSE)
-
-## Features
-
-- 🚀 Real-time face detection using Google ML Kit
-- 📍 Face landmarks detection (eyes, ears, nose, cheeks, mouth)
-- 🎯 Face contours detection
-- 😊 Face classification (smiling, eyes open probability)
-- 📐 Face angles (pitch, roll, yaw)
-- 🔄 Face tracking across frames
-- 🧠 TensorFlow Lite integration for face recognition/embedding
-- ⚡ Optimized async processing without blocking camera preview
+- Real-time face detection on the camera stream
+- Bounds, contours, landmarks, head Euler angles, eye-open / smiling probabilities, face tracking
+- Optional on-device tensor embedding extraction (`initTensor` / `detectFromBase64`) for face recognition pipelines
+- Built on Nitro Modules — zero-bridge, synchronous, fully typed
 
 ## Requirements
 
-- React Native >= 0.83
-- Node.js >= 20
-- react-native-vision-camera >= 4.6
-- react-native-worklets-core >= 1.5
-- iOS 15.5+
-- Android minSdkVersion 24+
+- `react-native` >= 0.85
+- `react-native-vision-camera` >= 5
+- `react-native-nitro-modules` >= 0.35.6
+- iOS 13+ / Android `minSdkVersion` 24+
 
 ## Installation
 
 ```sh
-npm install vision-camera-face-detection
+npm install vision-camera-face-detection react-native-nitro-modules react-native-vision-camera
 # or
-yarn add vision-camera-face-detection
+yarn add vision-camera-face-detection react-native-nitro-modules react-native-vision-camera
 ```
 
-### iOS
-
-Add the following to your `Podfile`:
-
-```ruby
-pod 'GoogleMLKit/FaceDetection', '~> 6.0.0'
-```
-
-Then run:
+iOS:
 
 ```sh
-cd ios && pod install
+cd ios && bundle exec pod install
 ```
 
-For TensorFlow Lite support, add the TFLite model file (e.g., `mobile_face_net.tflite`) to your iOS project.
+> `react-native-nitro-modules` is required because this library is built on [Nitro Modules](https://nitro.margelo.com/).
 
-### Android
+### Permissions
 
-No additional setup required. The library automatically links the required ML Kit dependencies.
-
-For TensorFlow Lite support, place your model file in the `assets` folder.
+Follow the [Vision Camera permissions guide](https://react-native-vision-camera.com/docs/guides) to add `NSCameraUsageDescription` (iOS) and `android.permission.CAMERA` (Android) to your app.
 
 ## Usage
 
-### Basic Face Detection
+### Drop-in `Camera` component
+
+The package ships a `Camera` view that wraps `react-native-vision-camera` and attaches the face scanner output for you.
 
 ```tsx
-import React, { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import {
   useCameraDevice,
   useCameraPermission,
+  type CameraRef,
 } from 'react-native-vision-camera';
 import {
   Camera,
   type Face,
-  type FaceDetectionOptions,
+  type FaceScannerOptions,
 } from 'vision-camera-face-detection';
 
 export default function App() {
   const { hasPermission, requestPermission } = useCameraPermission();
+  const { width, height } = useWindowDimensions();
+  const camera = useRef<CameraRef>(null);
   const device = useCameraDevice('front');
 
-  const faceDetectionOptions: FaceDetectionOptions = {
+  const options: FaceScannerOptions = {
     performanceMode: 'fast',
-    classificationMode: 'all',
-    landmarkMode: 'all',
-    contourMode: 'none',
+    runClassifications: true,
+    runContours: true,
+    runLandmarks: true,
+    windowWidth: width,
+    windowHeight: height,
   };
 
-  const handleFacesDetected = (faces: Face[], frame: Frame) => {
-    console.log('Detected faces:', faces.length);
+  useEffect(() => {
+    if (!hasPermission) requestPermission();
+  }, [hasPermission, requestPermission]);
 
-    if (faces.length > 0) {
-      const face = faces[0];
-      console.log('Face bounds:', face.bounds);
-      console.log('Smiling probability:', face.smilingProbability);
-      console.log('Left eye open:', face.leftEyeOpenProbability);
-      console.log('Right eye open:', face.rightEyeOpenProbability);
-    }
-  };
-
-  if (!hasPermission) {
-    requestPermission();
-    return null;
-  }
-
-  if (!device) return null;
+  if (!hasPermission || !device) return null;
 
   return (
-    <View style={styles.container}>
-      <Camera
-        style={StyleSheet.absoluteFill}
-        device={device}
-        isActive={true}
-        faceDetectionOptions={faceDetectionOptions}
-        faceDetectionCallback={handleFacesDetected}
-      />
-    </View>
+    <Camera
+      ref={camera}
+      style={StyleSheet.absoluteFill}
+      device={device}
+      isActive
+      orientationSource="device"
+      cameraFacing="front"
+      autoMode
+      {...options}
+      onFaceScanned={(faces: Face[]) => {
+        console.log(`Detected ${faces.length} face(s)`);
+      }}
+      onError={(error) => console.error('Face detection failed', error)}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 ```
 
-### Using the `useFaceDetector` Hook
+### Scanner options
 
-For more control, you can use the `useFaceDetector` hook directly with a custom frame processor:
+`FaceScannerOptions` (passed as props to `<Camera />` or to `createFaceScanner`):
 
-```tsx
-import { useFrameProcessor } from 'react-native-vision-camera';
-import {
-  useFaceDetector,
-  type FaceDetectionOptions,
-} from 'vision-camera-face-detection';
+| Option               | Type                   | Default     | Description                                                                                                                |
+| -------------------- | ---------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `performanceMode`    | `'fast' \| 'accurate'` | `'fast'`    | ML Kit detector performance mode.                                                                                          |
+| `runLandmarks`       | `boolean`              | `false`     | Detect facial landmarks (eyes, nose, mouth, ears).                                                                         |
+| `runContours`        | `boolean`              | `false`     | Detect face contours.                                                                                                      |
+| `runClassifications` | `boolean`              | `false`     | Detect smile and eye-open probabilities.                                                                                   |
+| `minFaceSize`        | `number`               | `0.15`      | Minimum face size as a fraction of the image.                                                                              |
+| `trackingEnabled`    | `boolean`              | `false`     | Assign and track a `trackingId` per face.                                                                                  |
+| `cameraFacing`       | `'front' \| 'back'`    | `'front'`   | Active camera. Used for mirroring math in `autoMode`.                                                                      |
+| `autoMode`           | `boolean`              | `false`     | Scale & rotate bounds/contours/landmarks to screen coordinates natively. Disable when drawing with a Skia Frame Processor. |
+| `windowWidth`        | `number`               | `1.0`       | Required when `autoMode` is enabled.                                                                                       |
+| `windowHeight`       | `number`               | `1.0`       | Required when `autoMode` is enabled.                                                                                       |
+| `outputResolution`   | `'preview' \| 'full'`  | `'preview'` | Camera buffer resolution to feed the detector.                                                                             |
 
-const faceDetectionOptions: FaceDetectionOptions = {
-  performanceMode: 'accurate',
-  landmarkMode: 'all',
-  contourMode: 'all',
-  classificationMode: 'all',
-};
+### `Face` result
 
-const { detectFaces } = useFaceDetector(faceDetectionOptions);
-
-const frameProcessor = useFrameProcessor(
-  (frame) => {
-    'worklet';
-    const faces = detectFaces(frame);
-    console.log('Faces:', faces);
-  },
-  [detectFaces]
-);
+```ts
+interface Face {
+  readonly bounds: { x: number; y: number; width: number; height: number };
+  readonly landmarks?: Landmarks;
+  readonly contours?: Contours;
+  readonly leftEyeOpenProbability?: number;
+  readonly rightEyeOpenProbability?: number;
+  readonly smilingProbability?: number;
+  readonly trackingId?: number;
+  readonly pitchAngle: number;
+  readonly rollAngle: number;
+  readonly yawAngle: number;
+  readonly base64?: string; // populated when tensor embedding is computed
+  readonly data?: string[]; // tensor embedding vector
+  readonly message?: string;
+}
 ```
 
-### TensorFlow Lite Integration
+### Tensor / face embedding API
 
-For face recognition/embedding using TensorFlow Lite:
+For face-recognition workflows you can run detection on a single Base64-encoded image and extract a tensor embedding.
 
-```tsx
+```ts
 import {
   initTensor,
   detectFromBase64,
-  type DetectBas64Type,
+  type TensorFaceOptions,
 } from 'vision-camera-face-detection';
 
-// Initialize TensorFlow Lite model
-await initTensor('mobile_face_net', 1);
+// Once during app startup (after camera permission is granted)
+const status = initTensor();
+console.log('Tensor init:', status);
 
-// Detect face from base64 image and get embedding
-const result: DetectBas64Type = await detectFromBase64(base64Image);
-console.log('Face embedding:', result.data);
-console.log('Cropped face base64:', result.base64);
-```
-
-## API Reference
-
-### `<Camera />` Component
-
-A wrapper around Vision Camera that includes face detection.
-
-| Prop                    | Type                                    | Description                      |
-| ----------------------- | --------------------------------------- | -------------------------------- |
-| `faceDetectionOptions`  | `FaceDetectionOptions`                  | Configuration for face detection |
-| `faceDetectionCallback` | `(faces: Face[], frame: Frame) => void` | Callback when faces are detected |
-| `...props`              | `CameraProps`                           | All Vision Camera props          |
-
-### `FaceDetectionOptions`
-
-| Option               | Type                   | Default   | Description                              |
-| -------------------- | ---------------------- | --------- | ---------------------------------------- |
-| `performanceMode`    | `'fast' \| 'accurate'` | `'fast'`  | Favor speed or accuracy                  |
-| `landmarkMode`       | `'none' \| 'all'`      | `'none'`  | Detect facial landmarks                  |
-| `contourMode`        | `'none' \| 'all'`      | `'none'`  | Detect face contours                     |
-| `classificationMode` | `'none' \| 'all'`      | `'none'`  | Classify faces (smiling, eyes open)      |
-| `minFaceSize`        | `number`               | `0.15`    | Minimum face size ratio                  |
-| `trackingEnabled`    | `boolean`              | `false`   | Enable face tracking across frames       |
-| `autoMode`           | `boolean`              | `false`   | Auto scale bounds for screen coordinates |
-| `windowWidth`        | `number`               | `1.0`     | Screen width for auto scaling            |
-| `windowHeight`       | `number`               | `1.0`     | Screen height for auto scaling           |
-| `cameraFacing`       | `'front' \| 'back'`    | `'front'` | Current camera position                  |
-| `enableTensor`       | `boolean`              | `false`   | Enable TensorFlow Lite processing        |
-
-### `Face` Interface
-
-```typescript
-interface Face {
-  pitchAngle: number; // Head rotation around X-axis
-  rollAngle: number; // Head rotation around Z-axis
-  yawAngle: number; // Head rotation around Y-axis
-  bounds: Bounds; // Face bounding box
-  leftEyeOpenProbability: number; // 0.0 to 1.0
-  rightEyeOpenProbability: number; // 0.0 to 1.0
-  smilingProbability: number; // 0.0 to 1.0
-  contours?: Contours; // Face contour points
-  landmarks?: Landmarks; // Face landmark points
-  data: number[]; // Face embedding (when TensorFlow enabled)
-}
-
-interface Bounds {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-```
-
-### `Landmarks` Interface
-
-```typescript
-interface Landmarks {
-  LEFT_CHEEK: Point;
-  LEFT_EAR: Point;
-  LEFT_EYE: Point;
-  MOUTH_BOTTOM: Point;
-  MOUTH_LEFT: Point;
-  MOUTH_RIGHT: Point;
-  NOSE_BASE: Point;
-  RIGHT_CHEEK: Point;
-  RIGHT_EAR: Point;
-  RIGHT_EYE: Point;
-}
-```
-
-### `Contours` Interface
-
-```typescript
-interface Contours {
-  FACE: Point[];
-  LEFT_EYEBROW_TOP: Point[];
-  LEFT_EYEBROW_BOTTOM: Point[];
-  RIGHT_EYEBROW_TOP: Point[];
-  RIGHT_EYEBROW_BOTTOM: Point[];
-  LEFT_EYE: Point[];
-  RIGHT_EYE: Point[];
-  UPPER_LIP_TOP: Point[];
-  UPPER_LIP_BOTTOM: Point[];
-  LOWER_LIP_TOP: Point[];
-  LOWER_LIP_BOTTOM: Point[];
-  NOSE_BRIDGE: Point[];
-  NOSE_BOTTOM: Point[];
-  LEFT_CHEEK: Point[];
-  RIGHT_CHEEK: Point[];
-}
-```
-
-### TensorFlow Lite Functions
-
-#### `initTensor(modelPath: string, count?: number): Promise<string>`
-
-Initialize TensorFlow Lite model for face recognition.
-
-- `modelPath`: Name of the TFLite model file (without extension)
-- `count`: Number of threads (optional)
-
-#### `detectFromBase64(imageString: string): Promise<DetectBas64Type>`
-
-Detect face from base64 image and return face embedding.
-
-```typescript
-type DetectBas64Type = {
-  base64: string; // Cropped face image
-  data: number[]; // Face embedding array
-  message: string; // Status message
-  leftEyeOpenProbability: number;
-  rightEyeOpenProbability: number;
-  smilingProbability: number;
+const options: TensorFaceOptions = {
+  base64Image: '<raw base64 without data: prefix>',
+  performanceMode: 'fast',
+  runClassifications: true,
+  runContours: true,
+  runLandmarks: true,
+  windowWidth,
+  windowHeight,
 };
-```
 
-## Example: Face Comparison
-
-```tsx
-// Calculate Euclidean distance between two face embeddings
-function compareFaces(embedding1: number[], embedding2: number[]): number {
-  let distance = 0.0;
-  for (let i = 0; i < embedding1.length; i++) {
-    const diff = embedding1[i] - embedding2[i];
-    distance += diff * diff;
-  }
-  return distance; // Lower = more similar
+const face = detectFromBase64(options);
+if (face?.data) {
+  const embedding = face.data.map((v) => parseFloat(parseFloat(v).toFixed(5)));
+  // compare against a stored embedding using L2 / cosine distance
 }
-
-// Usage
-const distance = compareFaces(knownFaceEmbedding, detectedFaceEmbedding);
-const isSamePerson = distance < 1.0; // Threshold may vary
 ```
 
-## Troubleshooting
+### Lower-level factories & hooks
 
-### iOS Build Issues
+If you prefer to wire the output manually:
 
-If you encounter build issues on iOS, ensure you have:
+```ts
+import {
+  createFaceScanner,
+  createFaceScannerOutput,
+  useFaceScanner,
+  useFaceScannerOutput,
+} from 'vision-camera-face-detection';
+```
 
-1. Run `pod install` after adding the package
-2. Added the required permissions in `Info.plist`:
-   ```xml
-   <key>NSCameraUsageDescription</key>
-   <string>Camera access is required for face detection</string>
-   ```
+- `createFaceScanner(options)` — returns a Nitro `FaceScanner` hybrid object.
+- `createFaceScannerOutput(options)` — returns a `CameraOutput` you can pass to `<VisionCamera outputs={[output]} />`.
+- `useFaceScanner` / `useFaceScannerOutput` — React hook variants used internally by the `Camera` component.
 
-### Android Build Issues
+## Example app
 
-If you encounter build issues on Android:
+A full example (including image-picker based enrollment and live distance computation) lives in [example/src/App.tsx](example/src/App.tsx).
 
-1. Ensure `minSdkVersion` is at least 24
-2. Ensure `compileSdkVersion` and `targetSdkVersion` are at least 36
-3. Enable `multiDexEnabled` if needed
-
-### Performance Tips
-
-- Use `performanceMode: 'fast'` for real-time applications
-- Disable `contourMode` and `landmarkMode` if not needed
-- Use `minFaceSize` to filter small faces
-- Disable `trackingEnabled` when using `contourMode`
+```sh
+yarn
+yarn example pods
+yarn example ios   # or: yarn example android
+```
 
 ## Contributing
 
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
+- [Development workflow](CONTRIBUTING.md#development-workflow)
+- [Sending a pull request](CONTRIBUTING.md#sending-a-pull-request)
+- [Code of conduct](CODE_OF_CONDUCT.md)
 
 ## License
 
@@ -343,4 +203,4 @@ MIT
 
 ---
 
-Made with ❤️ by [Yudi Edri Alviska](https://github.com/edritech93)
+Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
