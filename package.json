@@ -86,7 +86,7 @@
     "react-native": "0.85.3",
     "react-native-builder-bob": "^0.41.0",
     "react-native-nitro-modules": "^0.35.9",
-    "react-native-vision-camera": "^5.0.11",
+    "react-native-vision-camera": "5.1.0",
     "release-it": "^19.2.4",
     "turbo": "^2.8.21",
     "typescript": "^6.0.2"
@@ -95,7 +95,7 @@
     "react": "*",
     "react-native": "*",
     "react-native-nitro-modules": "^0.35.6",
-    "react-native-vision-camera": ">=5"
+    "react-native-vision-camera": ">=5.1"
   },
   "workspaces": [
     "example"

@@ -11,14 +11,16 @@ import {
   TextInput,
 } from 'react-native';
 import {
+  Camera as VisionCamera,
+  usePhotoOutput,
   useCameraDevice,
   useCameraPermission,
   type CameraRef,
 } from 'react-native-vision-camera';
 import {
-  Camera,
   initTensor,
   detectFromBase64,
+  useFaceScannerOutput,
   type Face,
   type FaceScannerOptions,
   type TensorFaceOptions,
@@ -47,6 +49,7 @@ export default function App() {
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
+  const [capturedPhotoUri, setCapturedPhotoUri] = useState<string>('');
   const distanceNum = useSharedValue<number>(2);
   const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -69,6 +72,7 @@ export default function App() {
   //
   const camera = useRef<CameraRef>(null);
   const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
+  const photoOutput = usePhotoOutput();
   //
   // face rectangle position
   //
@@ -97,6 +101,50 @@ export default function App() {
     }),
   }));
 
+  function onFaceScanned(faces: Face[]) {
+    console.log(`Detected ${faces.length} face(s)`);
+    if (Object.keys(faces).length <= 0) {
+      aFaceW.value = 0;
+      aFaceH.value = 0;
+      aFaceX.value = 0;
+      aFaceY.value = 0;
+      return;
+    }
+    const face = faces[0];
+    if (face) {
+      const { bounds } = face;
+      const { width, height, x, y } = bounds;
+      aFaceW.value = width;
+      aFaceH.value = height;
+      aFaceX.value = x;
+      aFaceY.value = y;
+      if (face.data) {
+        const arrayCamera: any = face.data.map((e: string) => {
+          const stringFixed: string = parseFloat(e).toFixed(5);
+          return parseFloat(stringFixed);
+        });
+        const knownEmb: any = dataSample;
+        let distance = 0.0;
+        for (let i = 0; i < arrayCamera.length; i++) {
+          const diff = arrayCamera[i] - knownEmb[i];
+          distance += diff * diff;
+        }
+        distanceNum.value = distance;
+        console.log(`Distance: ${distanceNum.value}`);
+      }
+    }
+  }
+
+  const faceOutput = useFaceScannerOutput({
+    ...faceDetectorOptions,
+    autoMode,
+    cameraFacing: facingFront ? 'front' : 'back',
+    onFaceScanned,
+    onError: (error: Error) => {
+      console.error(`Failed to detect faces!`, error);
+    },
+  });
+
   useEffect(() => {
     if (hasPermission) return;
     requestPermission();
@@ -107,6 +155,26 @@ export default function App() {
     const result = initTensor('facenet_512');
     console.log(`Tensor initialized with result: ${result}`);
   }, [hasPermission]);
+
+  async function _capturePhoto() {
+    try {
+      if (!cameraMounted || cameraPaused) {
+        throw { message: 'Camera must be mounted and active' };
+      }
+      const photoFile = await photoOutput.capturePhotoToFile(
+        { flashMode: 'off' },
+        {}
+      );
+      const uri = photoFile.filePath.startsWith('file://')
+        ? photoFile.filePath
+        : `file://${photoFile.filePath}`;
+      setCapturedPhotoUri(uri);
+      Alert.alert('Success', 'Photo captured successfully');
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Capture Error', JSON.stringify(error));
+    }
+  }
 
   async function _pickImageSample() {
     try {
@@ -167,40 +235,6 @@ export default function App() {
     }
   }
 
-  const onFaceScanned = (faces: Face[]) => {
-    console.log(`Detected ${faces.length} face(s)`);
-    if (Object.keys(faces).length <= 0) {
-      aFaceW.value = 0;
-      aFaceH.value = 0;
-      aFaceX.value = 0;
-      aFaceY.value = 0;
-      return;
-    }
-    const face = faces[0];
-    if (face) {
-      const { bounds } = face;
-      const { width, height, x, y } = bounds;
-      aFaceW.value = width;
-      aFaceH.value = height;
-      aFaceX.value = x;
-      aFaceY.value = y;
-      if (face.data) {
-        const arrayCamera: any = face.data.map((e: string) => {
-          const stringFixed: string = parseFloat(e).toFixed(5);
-          return parseFloat(stringFixed);
-        });
-        const knownEmb: any = dataSample;
-        let distance = 0.0;
-        for (let i = 0; i < arrayCamera.length; i++) {
-          const diff = arrayCamera[i] - knownEmb[i];
-          distance += diff * diff;
-        }
-        distanceNum.value = distance;
-        console.log(`Distance: ${distanceNum.value}`);
-      }
-    }
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.wrapCamera}>
@@ -208,19 +242,16 @@ export default function App() {
           <>
             {cameraMounted && (
               <>
-                <Camera
+                <VisionCamera
                   ref={camera}
                   style={StyleSheet.absoluteFill}
                   isActive={!cameraPaused}
                   device={cameraDevice}
                   orientationSource={'device'}
-                  onFaceScanned={onFaceScanned}
+                  outputs={[faceOutput, photoOutput]}
                   onError={(error: Error) => {
                     console.error(`Failed to detect faces!`, error);
                   }}
-                  {...faceDetectorOptions}
-                  autoMode={autoMode}
-                  cameraFacing={facingFront ? 'front' : 'back'}
                 />
                 <Animated.View style={boundingBoxStyle}>
                   <AnimatedTextInput
@@ -284,7 +315,26 @@ export default function App() {
             title={`${cameraMounted ? 'Unmount' : 'Mount'} Cam`}
           />
         </View>
+        {cameraMounted && (
+          <View style={styles.wrapBtn}>
+            <Button onPress={() => _capturePhoto()} title={'Capture Photo'} />
+            <Button
+              onPress={() => setCapturedPhotoUri('')}
+              title={'Clear Photo'}
+            />
+          </View>
+        )}
       </View>
+
+      {capturedPhotoUri !== '' && (
+        <View style={styles.wrapPreview}>
+          <Text style={styles.textPreviewLabel}>Last Capture</Text>
+          <Image
+            source={{ uri: capturedPhotoUri }}
+            style={styles.imagePreview}
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -343,5 +393,25 @@ const styles = StyleSheet.create({
   imageBase64Face: {
     height: 100,
     width: 100,
+  },
+  wrapPreview: {
+    position: 'absolute',
+    top: 50,
+    right: 16,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    padding: 8,
+    borderRadius: 8,
+  },
+  textPreviewLabel: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  imagePreview: {
+    height: 120,
+    width: 90,
+    borderRadius: 6,
+    backgroundColor: 'black',
   },
 });

@@ -4,6 +4,7 @@ import type {
   FaceScannerOptions,
   FaceScannerOutputOptions,
 } from './specs/FaceScannerFactory.nitro';
+import type { Face } from './specs/Face.nitro';
 import type { FaceScanner } from './specs/FaceScanner.nitro';
 import type { CameraOutput } from 'react-native-vision-camera';
 import type {
@@ -31,6 +32,6 @@ export function initTensor(modelName: string): string {
   return factoryTensor.initTensor(modelName);
 }
 
-export function detectFromBase64(options: TensorFaceOptions) {
+export function detectFromBase64(options: TensorFaceOptions): Face | null {
   return factoryTensor.detectFromBase64(options);
 }

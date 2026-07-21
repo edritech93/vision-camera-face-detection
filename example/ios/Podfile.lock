@@ -2103,7 +2103,7 @@ PODS:
     - TensorFlowLiteC (= 2.17.0)
     - TensorFlowLiteSwift/Privacy (= 2.17.0)
   - TensorFlowLiteSwift/Privacy (2.17.0)
-  - VisionCamera (5.0.11):
+  - VisionCamera (5.1.0):
     - hermes-engine
     - NitroImage
     - NitroModules
@@ -2128,8 +2128,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - VisionCameraFaceDetection (3.0.0):
-    - GoogleMLKit/FaceDetection (= 8.0.0)
+  - VisionCameraFaceDetection (3.1.0):
+    - GoogleMLKit/FaceDetection
     - hermes-engine
     - NitroModules
     - RCTRequired
@@ -2461,7 +2461,7 @@ SPEC CHECKSUMS:
   GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  hermes-engine: 65f01188dbbe7357b24b3fedb6664dba987a907a
+  hermes-engine: 21a4956b402af8aa438277a5b69b1e572756a98c
   MLImage: 2ab9c968e75f57911c16f4c9d9e8a8e9604a86a1
   MLKitCommon: 26b779f072a182c1603d4c88a101c350cac837b1
   MLKitFaceDetection: d50aff1a44aa9a4e95f7e208298a3ce40b68f9f8
@@ -2478,7 +2478,7 @@ SPEC CHECKSUMS:
   React: e2dc35338068bbd299c66f043ae0d7f25de8499e
   React-callinvoker: 28b25d21b124c26cebaea713ba7d801b9351dc48
   React-Core: f90d375d3bab515ad00df30605ce1bf02e6db12f
-  React-Core-prebuilt: 7effdea412e9f55eee42a1bff697ac5bc2d27d01
+  React-Core-prebuilt: 872298a57a5e021a7ae4a8d0161211ee55106747
   React-CoreModules: da4f80202ef954bdfb926ca4c9ac5f685900aa5c
   React-cxxreact: 1d1d2a28a5f10e4e2e7cf2bfd54dc9c92c68c672
   React-debug: 9af1e96a6069c996e3d9f1e493603e74bc9f1593
@@ -2541,14 +2541,14 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: a54c0c9b976766e1b6d5e2bb4d1ad0d15913e9e1
   ReactCodegen: a79fdb66d7f768cf73fda93973caa947658245c7
   ReactCommon: 3ec2a55999d296af90c24beb66c8a77dc660d3ef
-  ReactNativeDependencies: bbf8f5909d04bf87d4cce39628a8362ba9d79e20
+  ReactNativeDependencies: da004ef323f170f5a600cfe0e639c9b388f891ad
   RNPermissions: 176bfe2812dccaa230f58efbe2f43d0a54bc6273
   RNReanimated: 14f333e2230dc364d557d0f4c76f38f32e2db348
   RNWorklets: cfa6ca17fcc5ea7b6c1e391fb1c7c980e2d69407
   TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73
   TensorFlowLiteSwift: 723fe42222815e72490c79feeff05305530de393
-  VisionCamera: f56388a8c5b0ab8432ab82f55d3d5a8dd1a67e89
-  VisionCameraFaceDetection: 5d6f7bb240bed64d3ed22e9da562a3847cf6f001
+  VisionCamera: 67228db9247187a94926ada78c4eb1b809c24067
+  VisionCameraFaceDetection: 960e3be6e04158f066e02d40183798d5d79bd96a
   VisionCameraWorklets: 1e7b0165d43e9f651221221e3be231f36a7cf97d
   Yoga: e768f2b83369b04a4d54ca4a9027b3e488ad52e6
 
