@@ -8,4 +8,3 @@ export * from './specs/FaceScannerFactory.nitro';
 export * from './specs/TensorFactory.nitro';
 export * from './hooks/useFaceScanner';
 export * from './hooks/useFaceScannerOutput';
-export { default as Camera } from './views/Camera';
