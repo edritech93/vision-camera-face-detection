@@ -27,7 +27,7 @@ class HybridTensor: HybridTensorFactorySpec {
     }
   }
   
-  func detectFromBase64(options: TensorFaceOptions)throws -> Variant_NullType__any_HybridFaceSpec_ {
+  func detectFromBase64(options: TensorFaceOptions)throws -> Variant__any_HybridFaceSpec__NullType {
     let orientationManager = FaceDetectorOrientation()
     let runLandmarks = options.runLandmarks ?? false
     let runContours = options.runContours ?? false
@@ -65,7 +65,7 @@ class HybridTensor: HybridTensorFactorySpec {
     mlImage.orientation = .up
     let faces: [Face] = try faceDetector.results(in: mlImage)
     guard let face = faces.first else {
-      throw RuntimeError.error(withMessage: "No face detected")
+      return .second(.null)
     }
     guard let interpreter = interpreter else {
       throw RuntimeError.error(
@@ -97,7 +97,7 @@ class HybridTensor: HybridTensorFactorySpec {
     let data = embedding.map { String($0) }
     let base64 = FaceHelper.convertImageToBase64(image: imageCrop)
     
-    return .second(
+    return .first(
       HybridFace(
         face: face,
         config: config,

@@ -2,8 +2,7 @@ buildscript {
   ext.VisionCameraFaceDetection = [
     kotlinVersion: "2.0.21",
     minSdkVersion: 24,
-    compileSdkVersion: 36,
-    targetSdkVersion: 36
+    compileSdkVersion: 36
   ]
 
   ext.getExtOrDefault = { prop ->
@@ -35,15 +34,20 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 apply from: '../nitrogen/generated/android/visioncamerafacedetection+autolinking.gradle'
 
+apply plugin: "com.facebook.react"
+
+react {
+  // Keep codegen limited to this library to avoid generating duplicate delegates from example/node_modules.
+  jsRootDir = file("../src")
+}
+
 android {
   namespace "com.margelo.nitro.visioncamerafacedetection"
 
-  ndkVersion getExtOrDefault("ndkVersion")
   compileSdkVersion getExtOrDefault("compileSdkVersion")
 
   defaultConfig {
     minSdkVersion getExtOrDefault("minSdkVersion")
-    targetSdkVersion getExtOrDefault("targetSdkVersion")
 
     externalNativeBuild {
       cmake {
@@ -69,10 +73,16 @@ android {
     }
   }
 
-  packagingOptions {
-    excludes = [
+  packaging {
+    resources {
+      excludes += [
       "META-INF",
-      "META-INF/**",
+        "META-INF/**"
+      ]
+    }
+
+    jniLibs {
+      excludes += [
       "**/libc++_shared.so",
       "**/libfbjni.so",
       "**/libjsi.so",
@@ -88,39 +98,30 @@ android {
       "**/libreact_nativemodule_core.so",
       "**/libjscexecutor.so"
     ]
-  }
-
-  buildFeatures {
-    buildConfig true
-    prefab true
-  }
-
-  buildTypes {
-    release {
-      minifyEnabled false
     }
   }
 
-  lint {
-    disable "GradleCompatible"
+  buildFeatures {
+    prefab true
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
   }
 }
 
 dependencies {
-  implementation "com.facebook.react:react-android"
+  // Host app provides React Native runtime.
+  compileOnly "com.facebook.react:react-android"
   // Add minimal dependency on CameraX to use ImageAnalysis
   implementation "androidx.camera:camera-core:1.7.0-alpha01"
   // Google MLKit library
   implementation "com.google.mlkit:face-detection:16.1.7"
   // Add a dependency on NitroModules
-  implementation project(":react-native-nitro-modules")
+  compileOnly project(":react-native-nitro-modules")
   // Add a dependency on VisionCamera (for HybridFrameSpec and HybridCameraOutputSpec)
-  implementation project(":react-native-vision-camera")
+  compileOnly project(":react-native-vision-camera")
   // Add a dependency Tensorflow Lite
   implementation 'com.google.ai.edge.litert:litert:1.4.1'
   implementation 'com.google.ai.edge.litert:litert-support:1.4.1'

@@ -6,7 +6,7 @@ class HybridTensorFactory: HybridTensorFactorySpec {
     return try HybridTensor().initTensor(modelName: modelName)
   }
   
-  func detectFromBase64(options: TensorFaceOptions) throws -> Variant_NullType__any_HybridFaceSpec_ {
+  func detectFromBase64(options: TensorFaceOptions) throws -> Variant__any_HybridFaceSpec__NullType {
     return try HybridTensor().detectFromBase64(options: options)
   }
 }

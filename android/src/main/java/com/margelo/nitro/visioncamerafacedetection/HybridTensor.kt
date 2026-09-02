@@ -43,7 +43,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     return "initialization tflite success $modelName"
   }
 
-  override fun detectFromBase64(options: TensorFaceOptions): Variant_NullType_HybridFaceSpec {
+  override fun detectFromBase64(options: TensorFaceOptions): Variant_HybridFaceSpec_NullType {
     val runLandmarks = options.runLandmarks ?: false
     val runContours = options.runContours ?: false
     val runClassifications = options.runClassifications ?: false
@@ -67,7 +67,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     val task = faceDetector.process(mlImage)
     val faces = Tasks.await(task)
     if (faces.isEmpty()) {
-      return Variant_NullType_HybridFaceSpec.create(NullType.NULL)
+      return Variant_HybridFaceSpec_NullType.create(NullType.NULL)
     }
     val face = faces[0]
     val bmpFaceStorage =
@@ -84,7 +84,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     val output: FloatBuffer = FloatBuffer.allocate(512)
     interpreter?.run(input, output)
     val arrayData: Array<String> = output.array().map { it.toString() }.toTypedArray()
-    return Variant_NullType_HybridFaceSpec.create(
+    return Variant_HybridFaceSpec_NullType.create(
       HybridFace(
         face, config,
         base64 = FaceHelper().getBase64Image(bmpFaceStorage),

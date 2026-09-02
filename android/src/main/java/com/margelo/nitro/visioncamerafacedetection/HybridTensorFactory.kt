@@ -11,7 +11,7 @@ class HybridTensorFactory : HybridTensorFactorySpec() {
     return HybridTensor().initTensor(modelName)
   }
 
-  override fun detectFromBase64(options: TensorFaceOptions): Variant_NullType_HybridFaceSpec {
+  override fun detectFromBase64(options: TensorFaceOptions): Variant_HybridFaceSpec_NullType {
     return HybridTensor().detectFromBase64(options)
   }
 }
