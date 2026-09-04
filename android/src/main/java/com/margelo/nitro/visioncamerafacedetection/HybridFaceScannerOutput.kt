@@ -58,10 +58,14 @@ class HybridFaceScannerOutput(
   private val faceDetector = FaceDetection.getClient(
     options.toMLFaceDetectorOptions()
   )
+  private val faceHelper = FaceHelper()
   private var isBusy = AtomicBoolean(false)
   private val executor = Executors.newSingleThreadExecutor()
   private var imageAnalysis: ImageAnalysis? = null
   private val recommendedResolutionForBarcodeScanning = Size(1280, 720)
+  private val embeddingMinIntervalMs = 120L
+  private var lastEmbeddingAtMs = 0L
+  private var lastEmbeddingData: Array<String> = emptyArray()
 
   override fun createUseCase(
     mirrorMode: MirrorMode,
@@ -80,7 +84,13 @@ class HybridFaceScannerOutput(
       ResolutionSelector
         .Builder()
         .setResolutionStrategy(resolutionStrategy)
-        .setAllowedResolutionMode(ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE)
+        .setAllowedResolutionMode(
+          if (options.outputResolution == FaceDetectorOutputResolution.FULL) {
+            ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE
+          } else {
+            ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION
+          }
+        )
         .build()
     val imageAnalysis =
       ImageAnalysis
@@ -141,9 +151,14 @@ class HybridFaceScannerOutput(
         .process(inputImage)
         .addOnSuccessListener { faces ->
           if (faces.isEmpty()) {
+            lastEmbeddingData = emptyArray()
             options.onFaceScanned(emptyArray())
             return@addOnSuccessListener
           }
+          val nowMs = System.currentTimeMillis()
+          val shouldRefreshEmbedding =
+            nowMs - lastEmbeddingAtMs >= embeddingMinIntervalMs || lastEmbeddingData.isEmpty()
+          if (shouldRefreshEmbedding) {
           val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(inputImage)
           val bmpFaceResult =
             createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE)
@@ -155,17 +170,19 @@ class HybridFaceScannerOutput(
           matrix.postTranslate(-faceBB.left, -faceBB.top)
           matrix.postScale(sx, sy)
           cvFace.drawBitmap(bmpFrameResult, matrix, null)
-          val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceResult)
+          val input: ByteBuffer = faceHelper.bitmap2ByteBuffer(bmpFaceResult)
           val output: FloatBuffer = FloatBuffer.allocate(512)
           interpreter?.run(input, output)
-          val arrayData: Array<String> = output.array().map { it.toString() }.toTypedArray()
+          lastEmbeddingData = output.array().map { value -> value.toString() }.toTypedArray()
+            lastEmbeddingAtMs = nowMs
+          }
           val hybridFaces =
             faces
               .map {
                 HybridFace(
                   it, config,
                   base64 = "",
-                  data = arrayData,
+                  data = lastEmbeddingData,
                   message = "Successfully Get Face"
                 )
               }
