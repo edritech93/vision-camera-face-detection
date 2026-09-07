@@ -58,10 +58,17 @@ class HybridFaceScannerOutput(
   private val faceDetector = FaceDetection.getClient(
     options.toMLFaceDetectorOptions()
   )
+  private val faceHelper = FaceHelper()
   private var isBusy = AtomicBoolean(false)
-  private val executor = Executors.newSingleThreadExecutor()
+  private val analyzerExecutor = Executors.newSingleThreadExecutor()
+  private val callbackExecutor = Executors.newSingleThreadExecutor()
   private var imageAnalysis: ImageAnalysis? = null
-  private val recommendedResolutionForBarcodeScanning = Size(1280, 720)
+  // Lower analysis resolution improves FPS and reduces CPU/GPU usage.
+  private val recommendedResolutionForBarcodeScanning = Size(640, 480)
+  private val embeddingMinIntervalMs = 240L
+  private val embeddingOutputBuffer: FloatBuffer = FloatBuffer.allocate(512)
+  private var lastEmbeddingAtMs = 0L
+  private var lastEmbeddingData: Array<String> = emptyArray()
 
   override fun createUseCase(
     mirrorMode: MirrorMode,
@@ -80,7 +87,7 @@ class HybridFaceScannerOutput(
       ResolutionSelector
         .Builder()
         .setResolutionStrategy(resolutionStrategy)
-        .setAllowedResolutionMode(ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE)
+        .setAllowedResolutionMode(ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION)
         .build()
     val imageAnalysis =
       ImageAnalysis
@@ -88,18 +95,20 @@ class HybridFaceScannerOutput(
         .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
         .setOutputImageRotationEnabled(false)
         .setResolutionSelector(resolutionSelector)
+        .setImageQueueDepth(1)
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
         .build()
     return NativeCameraOutput.PreparedUseCase(imageAnalysis, {
       this.imageAnalysis = imageAnalysis
-      imageAnalysis.setAnalyzer(executor, this)
+      imageAnalysis.setAnalyzer(analyzerExecutor, this)
     })
   }
 
   override fun dispose() {
     orientationManager.stopDeviceOrientationListener()
     faceDetector.close()
-    executor.close()
+    analyzerExecutor.close()
+    callbackExecutor.close()
   }
 
   @OptIn(ExperimentalGetImage::class)
@@ -139,41 +148,49 @@ class HybridFaceScannerOutput(
       )
       faceDetector
         .process(inputImage)
-        .addOnSuccessListener { faces ->
+        .addOnSuccessListener(callbackExecutor) { faces ->
           if (faces.isEmpty()) {
+            lastEmbeddingData = emptyArray()
             options.onFaceScanned(emptyArray())
             return@addOnSuccessListener
           }
-          val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(inputImage)
-          val bmpFaceResult =
-            createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE)
-          val faceBB = RectF(faces[0].boundingBox)
-          val cvFace = Canvas(bmpFaceResult)
-          val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()
-          val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
-          val matrix = Matrix()
-          matrix.postTranslate(-faceBB.left, -faceBB.top)
-          matrix.postScale(sx, sy)
-          cvFace.drawBitmap(bmpFrameResult, matrix, null)
-          val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceResult)
-          val output: FloatBuffer = FloatBuffer.allocate(512)
-          interpreter?.run(input, output)
-          val arrayData: Array<String> = output.array().map { it.toString() }.toTypedArray()
+          val nowMs = System.currentTimeMillis()
+          val shouldRefreshEmbedding =
+            nowMs - lastEmbeddingAtMs >= embeddingMinIntervalMs || lastEmbeddingData.isEmpty()
+          if (shouldRefreshEmbedding) {
+            val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(inputImage)
+            val bmpFaceResult =
+              createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE)
+            val faceBB = RectF(faces[0].boundingBox)
+            val cvFace = Canvas(bmpFaceResult)
+            val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width().coerceAtLeast(1f)
+            val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height().coerceAtLeast(1f)
+            val matrix = Matrix()
+            matrix.postTranslate(-faceBB.left, -faceBB.top)
+            matrix.postScale(sx, sy)
+            cvFace.drawBitmap(bmpFrameResult, matrix, null)
+            val input: ByteBuffer = faceHelper.bitmap2ByteBuffer(bmpFaceResult)
+            embeddingOutputBuffer.clear()
+            interpreter?.run(input, embeddingOutputBuffer)
+            lastEmbeddingData =
+              embeddingOutputBuffer.array().map { value -> value.toString() }.toTypedArray()
+            lastEmbeddingAtMs = nowMs
+          }
           val hybridFaces =
             faces
               .map {
                 HybridFace(
                   it, config,
                   base64 = "",
-                  data = arrayData,
+                  data = lastEmbeddingData,
                   message = "Successfully Get Face"
                 )
               }
               .toTypedArray<HybridFaceSpec>()
           options.onFaceScanned(hybridFaces)
-        }.addOnFailureListener { error ->
+        }.addOnFailureListener(callbackExecutor) { error ->
           options.onError(error)
-        }.addOnCompleteListener {
+        }.addOnCompleteListener(callbackExecutor) {
           imageProxy.close()
           isBusy.set(false)
         }
