@@ -62,8 +62,9 @@ class HybridFaceScannerOutput(
   private var isBusy = AtomicBoolean(false)
   private val executor = Executors.newSingleThreadExecutor()
   private var imageAnalysis: ImageAnalysis? = null
-  private val recommendedResolutionForBarcodeScanning = Size(1280, 720)
-  private val embeddingMinIntervalMs = 120L
+  // Lower analysis resolution improves FPS and reduces CPU/GPU usage.
+  private val recommendedResolutionForBarcodeScanning = Size(640, 480)
+  private val embeddingMinIntervalMs = 240L
   private var lastEmbeddingAtMs = 0L
   private var lastEmbeddingData: Array<String> = emptyArray()
 
@@ -84,13 +85,7 @@ class HybridFaceScannerOutput(
       ResolutionSelector
         .Builder()
         .setResolutionStrategy(resolutionStrategy)
-        .setAllowedResolutionMode(
-          if (options.outputResolution == FaceDetectorOutputResolution.FULL) {
-            ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE
-          } else {
-            ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION
-          }
-        )
+        .setAllowedResolutionMode(ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION)
         .build()
     val imageAnalysis =
       ImageAnalysis
@@ -98,6 +93,7 @@ class HybridFaceScannerOutput(
         .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
         .setOutputImageRotationEnabled(false)
         .setResolutionSelector(resolutionSelector)
+        .setImageQueueDepth(1)
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
         .build()
     return NativeCameraOutput.PreparedUseCase(imageAnalysis, {

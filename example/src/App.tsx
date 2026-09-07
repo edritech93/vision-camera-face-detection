@@ -62,8 +62,8 @@ export default function App() {
   const faceDetectorOptions = useRef<FaceScannerOptions>({
     performanceMode: 'fast',
     runClassifications: true,
-    runContours: true,
-    runLandmarks: true,
+    runContours: false,
+    runLandmarks: false,
     windowWidth: widthScreen,
     windowHeight: heightScreen,
   }).current;
