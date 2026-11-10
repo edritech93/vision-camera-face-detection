@@ -18,7 +18,7 @@ A high-performance Face Detection plugin for [React Native Vision Camera](https:
 
 ## Requirements
 
-- React Native >= 0.83
+- React Native >= 0.85.3
 - Node.js >= 20
 - react-native-vision-camera >= 4.6
 - react-native-worklets-core >= 1.5
