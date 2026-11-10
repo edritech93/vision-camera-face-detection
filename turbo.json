@@ -1,10 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".nvmrc", ".yarnrc.yml"],
-  "globalEnv": ["NODE_ENV"],
-  "tasks": {
+  "pipeline": {
     "build:android": {
-      "env": ["ANDROID_HOME", "ORG_GRADLE_PROJECT_newArchEnabled"],
+      "env": ["ORG_GRADLE_PROJECT_newArchEnabled"],
       "inputs": [
         "package.json",
         "android",
@@ -20,12 +18,7 @@
       "outputs": []
     },
     "build:ios": {
-      "env": [
-        "RCT_NEW_ARCH_ENABLED",
-        "RCT_REMOVE_LEGACY_ARCH",
-        "RCT_USE_RN_DEP",
-        "RCT_USE_PREBUILT_RNCORE"
-      ],
+      "env": ["RCT_NEW_ARCH_ENABLED"],
       "inputs": [
         "package.json",
         "*.podspec",

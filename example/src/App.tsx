@@ -1,32 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  Text,
-  View,
   StyleSheet,
-  useWindowDimensions,
-  Alert,
+  Text,
   Button,
+  View,
   ActivityIndicator,
   Image,
-  TextInput,
+  useWindowDimensions,
+  Alert,
 } from 'react-native';
 import {
+  type Frame,
   Camera as VisionCamera,
-  usePhotoOutput,
   useCameraDevice,
   useCameraPermission,
-  type CameraRef,
 } from 'react-native-vision-camera';
 import {
+  Camera,
+  type Face,
+  type FaceDetectionOptions,
   initTensor,
   detectFromBase64,
-  useFaceScannerOutput,
-  type Face,
-  type FaceScannerOptions,
-  type TensorFaceOptions,
+  type DetectBas64Type,
 } from 'vision-camera-face-detection';
 import Animated, {
-  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -42,37 +39,27 @@ import { getPermissionReadStorage } from './permission';
 export default function App() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const { width: widthScreen, height: heightScreen } = useWindowDimensions();
-  const [autoMode, setAutoMode] = useState<boolean>(true);
+
   const [cameraMounted, setCameraMounted] = useState<boolean>(false);
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
+  const [autoScale, setAutoScale] = useState<boolean>(true);
   const [facingFront, setFacingFront] = useState<boolean>(true);
+  const [enableTensor, setEnableTensor] = useState<boolean>(false);
   const [loadingSample, setLoadingSample] = useState<boolean>(false);
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
-  const [capturedPhotoUri, setCapturedPhotoUri] = useState<string>('');
-  const distanceNum = useSharedValue<number>(2);
-  const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-
-  const distanceAnimatedProps = useAnimatedProps(() => {
-    return {
-      text: distanceNum.value.toFixed(5),
-    } as any;
-  });
-
-  const faceDetectorOptions = useRef<FaceScannerOptions>({
+  const [distanceNum, setDistanceNum] = useState<number>(2);
+  const faceDetectionOptions = useRef<FaceDetectionOptions>({
     performanceMode: 'fast',
-    runClassifications: true,
-    runContours: false,
-    runLandmarks: false,
+    classificationMode: 'all',
     windowWidth: widthScreen,
     windowHeight: heightScreen,
   }).current;
+  const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
   //
   // vision camera ref
   //
-  const camera = useRef<CameraRef>(null);
-  const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
-  const photoOutput = usePhotoOutput();
+  const camera = useRef<VisionCamera>(null);
   //
   // face rectangle position
   //
@@ -80,13 +67,14 @@ export default function App() {
   const aFaceH = useSharedValue(0);
   const aFaceX = useSharedValue(0);
   const aFaceY = useSharedValue(0);
-  const boundingBoxStyle = useAnimatedStyle(() => ({
+  const aRot = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: 4,
     borderLeftColor: 'rgb(0,255,0)',
     borderRightColor: 'rgb(0,255,0)',
     borderBottomColor: 'rgb(0,255,0)',
-    borderTopColor: 'rgb(255,0,0)',
+    borderTopColor: 'rgb(0,255,0)',
     width: withTiming(aFaceW.value, {
       duration: 100,
     }),
@@ -99,17 +87,57 @@ export default function App() {
     top: withTiming(aFaceY.value, {
       duration: 100,
     }),
+    transform: [
+      {
+        rotate: `${aRot.value}deg`,
+      },
+    ],
   }));
 
-  function onFaceScanned(faces: Face[]) {
-    console.log(`Detected ${faces.length} face(s)`);
-    if (Object.keys(faces).length <= 0) {
-      aFaceW.value = 0;
-      aFaceH.value = 0;
-      aFaceX.value = 0;
-      aFaceY.value = 0;
-      return;
-    }
+  useEffect(() => {
+    if (hasPermission) return;
+    requestPermission();
+  }, [hasPermission, requestPermission]);
+
+  useEffect(() => {
+    initTensor('facenet_512', 1)
+      .then((response: any) => console.log(response))
+      .catch((error: any) => console.log(error));
+  }, []);
+
+  /**
+   * Handle camera UI rotation
+   *
+   * @param {number} rotation Camera rotation
+   */
+  function handleUiRotation(rotation: number) {
+    aRot.value = rotation;
+  }
+
+  /**
+   * Hanldes camera mount error event
+   *
+   * @param {any} error Error event
+   */
+  function handleCameraMountError(error: any) {
+    console.error('camera mount error', error);
+  }
+
+  /**
+   * Handle detection result
+   *
+   * @param {Face[]} faces Detection result
+   * @returns {void}
+   */
+  function handleFacesDetected(faces: Face[], frame: Frame) {
+    console.log(
+      new Date().toTimeString(),
+      'faces',
+      faces.length,
+      'frame',
+      frame.toString()
+    );
+    if (Object.keys(faces).length <= 0) return;
     const face = faces[0];
     if (face) {
       const { bounds } = face;
@@ -119,8 +147,8 @@ export default function App() {
       aFaceX.value = x;
       aFaceY.value = y;
       if (face.data) {
-        const arrayCamera: any = face.data.map((e: string) => {
-          const stringFixed: string = parseFloat(e).toFixed(5);
+        const arrayCamera: any = face.data.map((e: number) => {
+          const stringFixed: string = e.toFixed(5);
           return parseFloat(stringFixed);
         });
         const knownEmb: any = dataSample;
@@ -129,50 +157,8 @@ export default function App() {
           const diff = arrayCamera[i] - knownEmb[i];
           distance += diff * diff;
         }
-        distanceNum.value = distance;
-        console.log(`Distance: ${distanceNum.value}`);
+        setDistanceNum(distance);
       }
-    }
-  }
-
-  const faceOutput = useFaceScannerOutput({
-    ...faceDetectorOptions,
-    autoMode,
-    cameraFacing: facingFront ? 'front' : 'back',
-    onFaceScanned,
-    onError: (error: Error) => {
-      console.error(`Failed to detect faces!`, error);
-    },
-  });
-
-  useEffect(() => {
-    if (hasPermission) return;
-    requestPermission();
-  }, [hasPermission, requestPermission]);
-
-  useEffect(() => {
-    if (!hasPermission) return;
-    const result = initTensor('facenet_512');
-    console.log(`Tensor initialized with result: ${result}`);
-  }, [hasPermission]);
-
-  async function _capturePhoto() {
-    try {
-      if (!cameraMounted || cameraPaused) {
-        throw { message: 'Camera must be mounted and active' };
-      }
-      const photoFile = await photoOutput.capturePhotoToFile(
-        { flashMode: 'off' },
-        {}
-      );
-      const uri = photoFile.filePath.startsWith('file://')
-        ? photoFile.filePath
-        : `file://${photoFile.filePath}`;
-      setCapturedPhotoUri(uri);
-      Alert.alert('Success', 'Photo captured successfully');
-    } catch (error) {
-      console.log(error);
-      Alert.alert('Capture Error', JSON.stringify(error));
     }
   }
 
@@ -201,29 +187,20 @@ export default function App() {
         throw { message: 'Invalid URI' };
       }
       const imageFull = itemAsset.base64 ?? '';
-      const tensorOptions: TensorFaceOptions = {
-        base64Image: imageFull,
-        performanceMode: 'fast',
-        runClassifications: true,
-        runContours: true,
-        runLandmarks: true,
-        windowWidth: widthScreen,
-        windowHeight: heightScreen,
-      };
-      const imageFace: Face | null = detectFromBase64(tensorOptions);
-      if (
-        !imageFace ||
-        imageFace.base64 === '' ||
-        imageFace.data === undefined
-      ) {
+      const imageFace: DetectBas64Type = await detectFromBase64(
+        imageFull
+      ).catch((error) => {
+        throw error;
+      });
+      if (imageFace.base64.length === 0) {
         throw { message: 'No Face detected!' };
       }
-      const arrayRes: number[] = imageFace.data.map((e: string) => {
-        const stringFixed: string = parseFloat(e).toFixed(5);
+      const arrayRes: number[] = imageFace.data.map((e: number) => {
+        const stringFixed: string = e.toFixed(5);
         return parseFloat(stringFixed);
       });
       setDataSample(arrayRes);
-      setImageSample(imageFace?.base64 ?? '');
+      setImageSample(imageFace.base64);
       console.log('Load Sample Successfully');
     } catch (error) {
       console.log(error);
@@ -242,24 +219,22 @@ export default function App() {
           <>
             {cameraMounted && (
               <>
-                <VisionCamera
-                  ref={camera}
+                <Camera
+                  ref={camera as any}
                   style={StyleSheet.absoluteFill}
                   isActive={!cameraPaused}
                   device={cameraDevice}
-                  orientationSource={'device'}
-                  outputs={[faceOutput, photoOutput]}
-                  onError={(error: Error) => {
-                    console.error(`Failed to detect faces!`, error);
+                  onError={handleCameraMountError}
+                  faceDetectionCallback={handleFacesDetected}
+                  onUIRotationChanged={handleUiRotation}
+                  faceDetectionOptions={{
+                    ...faceDetectionOptions,
+                    autoMode: true,
+                    enableTensor: enableTensor,
                   }}
                 />
-                <Animated.View style={boundingBoxStyle}>
-                  <AnimatedTextInput
-                    editable={false}
-                    underlineColorAndroid={'transparent'}
-                    style={styles.textDistance}
-                    animatedProps={distanceAnimatedProps}
-                  />
+                <Animated.View style={animatedStyle}>
+                  <Text style={styles.textDistance}>{distanceNum}</Text>
                 </Animated.View>
                 {cameraPaused && (
                   <Text style={styles.textPaused}>Camera is PAUSED</Text>
@@ -295,14 +270,18 @@ export default function App() {
       </View>
 
       <View style={styles.wrapMainBtn}>
+        <Button
+          onPress={() => setEnableTensor((current) => !current)}
+          title={`${enableTensor ? 'Disable' : 'Enable'} Tensor`}
+        />
         <View style={styles.wrapBtn}>
           <Button
             onPress={() => setFacingFront((current) => !current)}
             title={'Toggle Cam'}
           />
           <Button
-            onPress={() => setAutoMode((current) => !current)}
-            title={`${autoMode ? 'Disable' : 'Enable'} AutoMode`}
+            onPress={() => setAutoScale((current) => !current)}
+            title={`${autoScale ? 'Disable' : 'Enable'} Scale`}
           />
         </View>
         <View style={styles.wrapBtn}>
@@ -315,26 +294,7 @@ export default function App() {
             title={`${cameraMounted ? 'Unmount' : 'Mount'} Cam`}
           />
         </View>
-        {cameraMounted && (
-          <View style={styles.wrapBtn}>
-            <Button onPress={() => _capturePhoto()} title={'Capture Photo'} />
-            <Button
-              onPress={() => setCapturedPhotoUri('')}
-              title={'Clear Photo'}
-            />
-          </View>
-        )}
       </View>
-
-      {capturedPhotoUri !== '' && (
-        <View style={styles.wrapPreview}>
-          <Text style={styles.textPreviewLabel}>Last Capture</Text>
-          <Image
-            source={{ uri: capturedPhotoUri }}
-            style={styles.imagePreview}
-          />
-        </View>
-      )}
     </View>
   );
 }
@@ -387,31 +347,9 @@ const styles = StyleSheet.create({
   textDistance: {
     backgroundColor: 'rgb(0,255,0)',
     color: 'black',
-    paddingHorizontal: 8,
-    minWidth: 80,
   },
   imageBase64Face: {
     height: 100,
     width: 100,
-  },
-  wrapPreview: {
-    position: 'absolute',
-    top: 50,
-    right: 16,
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    padding: 8,
-    borderRadius: 8,
-  },
-  textPreviewLabel: {
-    color: 'white',
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  imagePreview: {
-    height: 120,
-    width: 90,
-    borderRadius: 6,
-    backgroundColor: 'black',
   },
 });

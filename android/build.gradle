@@ -1,17 +1,6 @@
 buildscript {
-  ext.VisionCameraFaceDetection = [
-    kotlinVersion: "2.0.21",
-    minSdkVersion: 24,
-    compileSdkVersion: 36,
-    ndkVersion: "27.1.12297006"
-  ]
-
-  ext.getExtOrDefault = { prop ->
-    if (rootProject.ext.has(prop)) {
-      return rootProject.ext.get(prop)
-    }
-
-    return VisionCameraFaceDetection[prop]
+  ext.getExtOrDefault = {name ->
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['VisionCameraFaceDetection_' + name]
   }
 
   repositories {
@@ -26,105 +15,80 @@ buildscript {
   }
 }
 
-def reactNativeArchitectures() {
-  def value = rootProject.getProperties().get("reactNativeArchitectures")
-  return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
 }
 
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
-apply from: '../nitrogen/generated/android/visioncamerafacedetection+autolinking.gradle'
 
-apply plugin: "com.facebook.react"
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+}
 
-react {
-  // Keep codegen limited to this library to avoid generating duplicate delegates from example/node_modules.
-  jsRootDir = file("../src")
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["VisionCameraFaceDetection_" + name]).toInteger()
+}
+
+def supportsNamespace() {
+  def parsed = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')
+  def major = parsed[0].toInteger()
+  def minor = parsed[1].toInteger()
+
+  // Namespace support was added in 7.3.0
+  return (major == 7 && minor >= 3) || major >= 8
 }
 
 android {
-  namespace "com.margelo.nitro.visioncamerafacedetection"
+  if (supportsNamespace()) {
+    namespace "com.visioncamerafacedetection"
 
-  ndkVersion getExtOrDefault("ndkVersion")
-  compileSdkVersion getExtOrDefault("compileSdkVersion")
-
-  defaultConfig {
-    minSdkVersion getExtOrDefault("minSdkVersion")
-
-    externalNativeBuild {
-      cmake {
-        cppFlags "-frtti -fexceptions -Wall -fstack-protector-all"
-        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
-        abiFilters (*reactNativeArchitectures())
-
-        buildTypes {
-          debug {
-            cppFlags "-O1 -g"
-          }
-          release {
-            cppFlags "-O2"
-          }
-        }
+    sourceSets {
+      main {
+        manifest.srcFile "src/main/AndroidManifestNew.xml"
       }
     }
   }
 
-  externalNativeBuild {
-    cmake {
-      path "CMakeLists.txt"
+  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
+    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
     }
   }
 
-  packaging {
-    resources {
-      excludes += [
-      "META-INF",
-        "META-INF/**"
-      ]
-    }
-
-    jniLibs {
-      excludes += [
-      "**/libc++_shared.so",
-      "**/libfbjni.so",
-      "**/libjsi.so",
-      "**/libfolly_json.so",
-      "**/libfolly_runtime.so",
-      "**/libglog.so",
-      "**/libhermes.so",
-      "**/libhermes-executor-debug.so",
-      "**/libhermes_executor.so",
-      "**/libreactnative.so",
-      "**/libreactnativejni.so",
-      "**/libturbomodulejsijni.so",
-      "**/libreact_nativemodule_core.so",
-      "**/libjscexecutor.so"
-    ]
-    }
-  }
-
-  buildFeatures {
-    prefab true
+  lintOptions {
+    disable "GradleCompatible"
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 }
 
+repositories {
+  mavenCentral()
+  google()
+}
+
+def kotlin_version = getExtOrDefault("kotlinVersion")
+
 dependencies {
-  // Host app provides React Native runtime.
-  compileOnly "com.facebook.react:react-android"
-  // Add minimal dependency on CameraX to use ImageAnalysis
-  implementation "androidx.camera:camera-core:1.7.0-alpha01"
-  // Google MLKit library
+  implementation "com.facebook.react:react-android"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  api project(":react-native-vision-camera")
+  implementation "androidx.annotation:annotation:1.9.1"
+  implementation "androidx.camera:camera-core:1.5.2"
   implementation "com.google.mlkit:face-detection:16.1.7"
-  // Add a dependency on NitroModules
-  compileOnly project(":react-native-nitro-modules")
-  // Add a dependency on VisionCamera (for HybridFrameSpec and HybridCameraOutputSpec)
-  compileOnly project(":react-native-vision-camera")
-  // Add a dependency Tensorflow Lite
   implementation 'com.google.ai.edge.litert:litert:1.4.1'
   implementation 'com.google.ai.edge.litert:litert-support:1.4.1'
 }
+

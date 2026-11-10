@@ -1,6 +1,7 @@
 const path = require('path');
 const { getDefaultConfig } = require('@react-native/metro-config');
-const { withMetroConfig } = require('react-native-monorepo-config');
+const { getConfig } = require('react-native-builder-bob/metro-config');
+const pkg = require('../package.json');
 
 const root = path.resolve(__dirname, '..');
 
@@ -10,10 +11,8 @@ const root = path.resolve(__dirname, '..');
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = withMetroConfig(getDefaultConfig(__dirname), {
+module.exports = getConfig(getDefaultConfig(__dirname), {
   root,
-  dirname: __dirname,
-  conditions: ['vision-camera-face-detection-source'],
+  pkg,
+  project: __dirname,
 });
-
-module.exports = config;
