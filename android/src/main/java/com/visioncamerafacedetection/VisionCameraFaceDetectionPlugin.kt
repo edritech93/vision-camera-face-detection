@@ -42,6 +42,7 @@ class VisionCameraFaceDetectionPlugin(
   private var cameraFacing: Position = Position.FRONT
   private val orientationManager = VisionCameraFaceDetectorOrientation(proxy.context)
   private var enableTensor = false
+  private var tensorModel = currentTensorModel
 
   init {
     // handle auto scaling
@@ -49,6 +50,7 @@ class VisionCameraFaceDetectionPlugin(
 
     // handle enable/disable tensor
     enableTensor = options?.get("enableTensor").toString() == "true"
+    tensorModel = (options?.get("model") as? String)?.let { TensorModel.from(it) } ?: currentTensorModel
 
     // initializes faceDetector on creation
     var performanceModeValue = FaceDetectorOptions.PERFORMANCE_MODE_FAST
@@ -312,23 +314,25 @@ class VisionCameraFaceDetectionPlugin(
         val map: MutableMap<String, Any> = HashMap()
         val arrayData: MutableList<Double> = ArrayList()
         if (enableTensor) {
+          val tensorModelConfig = getTensorModelConfig(tensorModel)
           val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(image)
           val bmpFaceResult =
             Bitmap.createBitmap(
-              TF_OD_API_INPUT_SIZE,
-              TF_OD_API_INPUT_SIZE,
+              tensorModelConfig.inputSize,
+              tensorModelConfig.inputSize,
               Bitmap.Config.ARGB_8888
             )
           val faceBB = RectF(face.boundingBox)
           val cvFace = Canvas(bmpFaceResult)
-          val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()
-          val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
+          val sx = tensorModelConfig.inputSize.toFloat() / faceBB.width()
+          val sy = tensorModelConfig.inputSize.toFloat() / faceBB.height()
           val matrix = Matrix()
           matrix.postTranslate(-faceBB.left, -faceBB.top)
           matrix.postScale(sx, sy)
           cvFace.drawBitmap(bmpFrameResult, matrix, null)
-          val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceResult)
-          val output: FloatBuffer = FloatBuffer.allocate(512)
+          val input: ByteBuffer =
+            FaceHelper().bitmap2ByteBuffer(bmpFaceResult, tensorModelConfig.inputSize)
+          val output: FloatBuffer = FloatBuffer.allocate(tensorModelConfig.outputSize)
           interpreter?.run(input, output)
 
           for (i: Float in output.array()) {

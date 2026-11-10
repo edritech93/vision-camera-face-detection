@@ -47,7 +47,8 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
       options.numThreads = count
       interpreter = Interpreter(byteFile, options)
       interpreter?.allocateTensors()
-      promise.resolve("initialization tflite success")
+      setCurrentTensorModel(modelFile)
+      promise.resolve("initialization $modelFile.tflite success")
     } catch (e: Exception) {
       e.printStackTrace()
       promise.reject(Throwable(e))
@@ -74,19 +75,25 @@ class VisionCameraFaceDetectionModule(private val reactContext: ReactApplication
       val faces = Tasks.await(task)
       val map: WritableMap = WritableNativeMap()
       if (faces.size > 0) {
+        val tensorModelConfig = getCurrentTensorModelConfig()
         val face = faces[0]
         val bmpFaceStorage =
-          Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Bitmap.Config.ARGB_8888)
+          Bitmap.createBitmap(
+            tensorModelConfig.inputSize,
+            tensorModelConfig.inputSize,
+            Bitmap.Config.ARGB_8888
+          )
         val faceBB = RectF(face.boundingBox)
         val cvFace = Canvas(bmpFaceStorage)
-        val sx = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.width()
-        val sy = TF_OD_API_INPUT_SIZE.toFloat() / faceBB.height()
+        val sx = tensorModelConfig.inputSize.toFloat() / faceBB.width()
+        val sy = tensorModelConfig.inputSize.toFloat() / faceBB.height()
         val matrix = Matrix()
         matrix.postTranslate(-faceBB.left, -faceBB.top)
         matrix.postScale(sx, sy)
         cvFace.drawBitmap(bmpStorageResult, matrix, null)
-        val input: ByteBuffer = FaceHelper().bitmap2ByteBuffer(bmpFaceStorage)
-        val output: FloatBuffer = FloatBuffer.allocate(512)
+        val input: ByteBuffer =
+          FaceHelper().bitmap2ByteBuffer(bmpFaceStorage, tensorModelConfig.inputSize)
+        val output: FloatBuffer = FloatBuffer.allocate(tensorModelConfig.outputSize)
         interpreter?.run(input, output)
         val arrayData = Arguments.createArray()
         for (i: Float in output.array()) {

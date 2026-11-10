@@ -1,4 +1,5 @@
 import { NativeModules, Platform } from 'react-native';
+import type { TensorModel } from './FaceDetector';
 
 const LINKING_ERROR =
   `The package 'vision-camera-face-detection' doesn't seem to be linked. Make sure: \n\n` +
@@ -18,7 +19,10 @@ const VisionCameraFaceDetectionModule =
         }
       );
 
-export function initTensor(modelPath: string, count?: number): Promise<string> {
+export function initTensor(
+  modelPath: TensorModel = 'mobile_face_net',
+  count?: number
+): Promise<string> {
   return VisionCameraFaceDetectionModule.initTensor(modelPath, count);
 }
 

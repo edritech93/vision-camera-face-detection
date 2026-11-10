@@ -27,6 +27,7 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
   private var cameraFacing:AVCaptureDevice.Position = .front
   private var orientationManager = VisionCameraFaceDetectorOrientation()
   private var enableTensor = false
+  private var tensorModel: TensorModel = currentTensorModel
   
   public override init(
     proxy: VisionCameraProxyHolder,
@@ -52,6 +53,9 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
     // handle auto scaling and rotation
     autoMode = config?["autoMode"] as? Bool == true
     enableTensor = config?["enableTensor"] as? Bool == true
+    if let modelName = config?["model"] as? String {
+      tensorModel = TensorModel(rawValue: modelName) ?? .mobileFaceNet
+    }
     
     // initializes faceDetector on creation
     let minFaceSize = 0.15
@@ -291,10 +295,20 @@ public class VisionCameraFaceDetectionPlugin: FrameProcessorPlugin {
       for face in faces {
         var map: [String: Any] = [:]
         if enableTensor {
-          guard let imageCrop = FaceHelper.getImageFaceFromBuffer(from: frame.buffer, rectImage: face.frame, orientation: image.orientation) else {
+          let tensorConfig = tensorModelConfig(for: tensorModel)
+          guard let imageCrop = FaceHelper.getImageFaceFromBuffer(
+            from: frame.buffer,
+            rectImage: face.frame,
+            orientation: image.orientation,
+            inputSize: tensorConfig.inputWidth
+          ) else {
             return nil
           }
-          guard let rgbData = FaceHelper.rgbDataFromBuffer(imageCrop) else {
+          guard let rgbData = FaceHelper.rgbDataFromBuffer(
+            imageCrop,
+            inputWidth: tensorConfig.inputWidth,
+            inputHeight: tensorConfig.inputHeight
+          ) else {
             return nil
           }
           try interpreter?.copy(rgbData, toInputAt: 0)

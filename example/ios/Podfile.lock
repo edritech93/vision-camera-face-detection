@@ -1448,7 +1448,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-image-picker (8.2.1):
+  - react-native-image-picker (8.3.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1470,7 +1470,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-worklets-core (1.6.2):
+  - react-native-worklets-core (1.6.3):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1877,7 +1877,7 @@ PODS:
     - React-utils (= 0.85.3)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.85.3)
-  - RNPermissions (5.4.4):
+  - RNPermissions (5.6.3):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2433,8 +2433,8 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 51efb3fe3b65c853336e22aaf37dfd9b17cc12ea
   React-microtasksnativemodule: af4870bf9fc63067a00070e3006c4eb5b47b6cb8
   React-mutationobservernativemodule: 0d9fadff6b7ab9ef8a2c77de66e9d481c1509926
-  react-native-image-picker: 9dce42d17f5917de55bdff39a587390fd496beda
-  react-native-worklets-core: 2cc8458747843cc722fd5048ccb178de28b6d447
+  react-native-image-picker: bfaeb74511c1132c0c83b828d84662101d8de73c
+  react-native-worklets-core: 78e7ad185d2fb75838e23d84049f4ef1ec7ee15a
   React-NativeModulesApple: cc6ec4767844d610e92cc358bd3ea34937438d56
   React-networking: 352c0aab2b520439ae8126455ad15f3f17e3820e
   React-oscompat: 64a0c7ef5441855dc6e2a6afe8ba8f92aa05075e
@@ -2469,7 +2469,7 @@ SPEC CHECKSUMS:
   ReactCodegen: a79fdb66d7f768cf73fda93973caa947658245c7
   ReactCommon: 3ec2a55999d296af90c24beb66c8a77dc660d3ef
   ReactNativeDependencies: da004ef323f170f5a600cfe0e639c9b388f891ad
-  RNPermissions: d56c7250e4480b277a8b9ab2f3da50404e0f491b
+  RNPermissions: 70e9f9d9601e4a8e6a47f9f1bbb974dc98b36f0a
   RNReanimated: 0c93d90acdd8b5341f8ef5d08ab13e321ef374ca
   RNWorklets: 3f04cef6880da23f1b8aa2b58d209e52a3fbd8be
   TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73

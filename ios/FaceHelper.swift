@@ -9,8 +9,28 @@ import TensorFlowLite
 
 let batchSize = 1
 let inputChannels = 1
-let inputWidth = 160
-let inputHeight = 160
+
+enum TensorModel: String {
+  case mobileFaceNet = "mobile_face_net"
+  case facenet512 = "facenet_512"
+}
+
+struct TensorModelConfig {
+  let inputWidth: Int
+  let inputHeight: Int
+  let outputSize: Int
+}
+
+var currentTensorModel: TensorModel = .mobileFaceNet
+
+func tensorModelConfig(for model: TensorModel) -> TensorModelConfig {
+  switch model {
+  case .mobileFaceNet:
+    return TensorModelConfig(inputWidth: 112, inputHeight: 112, outputSize: 192)
+  case .facenet512:
+    return TensorModelConfig(inputWidth: 160, inputHeight: 160, outputSize: 512)
+  }
+}
 
 // TensorFlow Lite `Interpreter` object for performing inference on a given model.
 var interpreter: Interpreter? = nil
@@ -28,8 +48,8 @@ class FaceHelper {
     return imageData.base64EncodedString()
   }
   
-  static func rgbDataFromBuffer(_ buffer: CVPixelBuffer) -> Data? {
-    let byteCount = batchSize * inputWidth * inputHeight * inputChannels
+  static func rgbDataFromBuffer(_ buffer: CVPixelBuffer, inputWidth: Int, inputHeight: Int) -> Data? {
+    _ = batchSize * inputWidth * inputHeight * inputChannels
     CVPixelBufferLockBaseAddress(buffer, .readOnly)
     defer {
       CVPixelBufferUnlockBaseAddress(buffer, .readOnly)
@@ -110,7 +130,7 @@ class FaceHelper {
     return pixelBuffer
   }
   
-  static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer, rectImage: CGRect, orientation: UIImage.Orientation) -> CVPixelBuffer? {
+  static func getImageFaceFromBuffer(from sampleBuffer: CMSampleBuffer, rectImage: CGRect, orientation: UIImage.Orientation, inputSize: Int) -> CVPixelBuffer? {
     autoreleasepool {
       let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
       let ciimage = CIImage(cvPixelBuffer: imageBuffer!)
@@ -119,7 +139,7 @@ class FaceHelper {
       
       let imageRef: CGImage = cgImage.cropping(to: rectImage)!
       let imageCrop: UIImage = UIImage(cgImage: imageRef, scale: 0.5, orientation: orientation)
-      return uiImageToPixelBuffer(image: imageCrop, size: inputWidth)
+      return uiImageToPixelBuffer(image: imageCrop, size: inputSize)
     }
   }
 }

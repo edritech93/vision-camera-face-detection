@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -49,12 +49,18 @@ export default function App() {
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
   const [distanceNum, setDistanceNum] = useState<number>(2);
-  const faceDetectionOptions = useRef<FaceDetectionOptions>({
-    performanceMode: 'fast',
-    classificationMode: 'all',
-    windowWidth: widthScreen,
-    windowHeight: heightScreen,
-  }).current;
+  const [tensorModel, setTensorModel] =
+    useState<FaceDetectionOptions['model']>('facenet_512');
+  const faceDetectionOptions = useMemo<FaceDetectionOptions>(
+    () => ({
+      performanceMode: 'fast',
+      classificationMode: 'all',
+      model: tensorModel,
+      windowWidth: widthScreen,
+      windowHeight: heightScreen,
+    }),
+    [tensorModel, widthScreen, heightScreen]
+  );
   const cameraDevice = useCameraDevice(facingFront ? 'front' : 'back');
   //
   // vision camera ref
@@ -100,10 +106,10 @@ export default function App() {
   }, [hasPermission, requestPermission]);
 
   useEffect(() => {
-    initTensor('facenet_512', 1)
+    initTensor(tensorModel, 1)
       .then((response: any) => console.log(response))
       .catch((error: any) => console.log(error));
-  }, []);
+  }, [tensorModel]);
 
   /**
    * Handle camera UI rotation
@@ -244,6 +250,19 @@ export default function App() {
             {!cameraMounted && (
               <View style={styles.wrapCenter}>
                 <Text style={styles.textNoMounted}>Camera is NOT mounted</Text>
+                <Text style={styles.textModelInfo}>
+                  Selected model: {tensorModel}
+                </Text>
+                <View style={styles.wrapBtn}>
+                  <Button
+                    title={'Use mobile_face_net'}
+                    onPress={() => setTensorModel('mobile_face_net')}
+                  />
+                  <Button
+                    title={'Use facenet_512'}
+                    onPress={() => setTensorModel('facenet_512')}
+                  />
+                </View>
                 <Button
                   title={'Pick Image Sample'}
                   onPress={() => _pickImageSample()}
@@ -347,6 +366,11 @@ const styles = StyleSheet.create({
   textDistance: {
     backgroundColor: 'rgb(0,255,0)',
     color: 'black',
+  },
+  textModelInfo: {
+    marginTop: 8,
+    marginBottom: 8,
+    color: 'cyan',
   },
   imageBase64Face: {
     height: 100,

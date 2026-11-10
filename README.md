@@ -165,11 +165,19 @@ import {
 
 // Initialize TensorFlow Lite model
 await initTensor('mobile_face_net', 1);
+// or
+await initTensor('facenet_512', 1);
 
 // Detect face from base64 image and get embedding
 const result: DetectBas64Type = await detectFromBase64(base64Image);
 console.log('Face embedding:', result.data);
 console.log('Cropped face base64:', result.base64);
+
+// Enable tensor in frame processor with matching model config
+const faceDetectionOptions: FaceDetectionOptions = {
+  enableTensor: true,
+  model: 'mobile_face_net', // or 'facenet_512'
+};
 ```
 
 ## API Reference
@@ -199,6 +207,7 @@ A wrapper around Vision Camera that includes face detection.
 | `windowHeight`       | `number`               | `1.0`     | Screen height for auto scaling           |
 | `cameraFacing`       | `'front' \| 'back'`    | `'front'` | Current camera position                  |
 | `enableTensor`       | `boolean`              | `false`   | Enable TensorFlow Lite processing        |
+| `model`              | `'mobile_face_net' \| 'facenet_512'` | `'mobile_face_net'` | Tensor model used for tensor input/output sizing |
 
 ### `Face` Interface
 
@@ -265,11 +274,11 @@ interface Contours {
 
 ### TensorFlow Lite Functions
 
-#### `initTensor(modelPath: string, count?: number): Promise<string>`
+#### `initTensor(modelPath?: 'mobile_face_net' | 'facenet_512', count?: number): Promise<string>`
 
 Initialize TensorFlow Lite model for face recognition.
 
-- `modelPath`: Name of the TFLite model file (without extension)
+- `modelPath`: TensorFlow Lite model name (`mobile_face_net` or `facenet_512`)
 - `count`: Number of threads (optional)
 
 #### `detectFromBase64(imageString: string): Promise<DetectBas64Type>`

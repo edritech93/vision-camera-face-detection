@@ -32,7 +32,8 @@ class VisionCameraFaceDetectionModule: NSObject {
             options.threadCount = count
             interpreter = try Interpreter(modelPath: modelPath, options: options)
             try interpreter?.allocateTensors()
-            resolve("initialization tflite success")
+            currentTensorModel = TensorModel(rawValue: modelName) ?? .mobileFaceNet
+            resolve("initialization model \(modelName).tflite success")
         } catch let error {
             print("Failed to create the interpreter with error: \(error.localizedDescription)")
             reject("Error", "tflite error", error)
@@ -56,17 +57,18 @@ class VisionCameraFaceDetectionModule: NSObject {
             var map: [String: Any] = [:]
             let faces: [Face] =  try VisionCameraFaceDetectionModule.faceDetector.results(in: image)
             if (!faces.isEmpty){
+                let tensorConfig = tensorModelConfig(for: currentTensorModel)
                 let face = faces.first
                 let faceFrame = face!.frame
                 guard let imageCrop = FaceHelper.getImageFaceFromUIImage(from: uiImage, rectImage: faceFrame) else {
                     reject("imageCrop can't created", nil, nil)
                     return
                 }
-                guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: inputWidth) else {
+                guard let pixelBuffer = FaceHelper.uiImageToPixelBuffer(image: imageCrop, size: tensorConfig.inputWidth) else {
                     reject("Failed to get pixelBuffer", nil, nil)
                     return
                 }
-                guard let rgbData = FaceHelper.rgbDataFromBuffer(pixelBuffer) else {
+                guard let rgbData = FaceHelper.rgbDataFromBuffer(pixelBuffer, inputWidth: tensorConfig.inputWidth, inputHeight: tensorConfig.inputHeight) else {
                     reject("Failed to convert the image buffer to RGB data.", nil, nil)
                     return
                 }

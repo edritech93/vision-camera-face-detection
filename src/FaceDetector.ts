@@ -70,6 +70,8 @@ export interface Landmarks {
   RIGHT_EYE: Point;
 }
 
+export type TensorModel = 'mobile_face_net' | 'facenet_512';
+
 export interface FaceDetectionOptions {
   /**
    * Favor speed or accuracy when detecting faces.
@@ -149,6 +151,13 @@ export interface FaceDetectionOptions {
    * for enable/disable tensorflow lite logic, just face detection
    */
   enableTensor?: boolean;
+
+  /**
+   * TensorFlow Lite model name used for embedding output shape and input crop size.
+   *
+   * @default 'mobile_face_net'
+   */
+  model?: TensorModel;
 }
 
 /**

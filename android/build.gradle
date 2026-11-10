@@ -23,10 +23,6 @@ def isNewArchitectureEnabled() {
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
-if (isNewArchitectureEnabled()) {
-  apply plugin: "com.facebook.react"
-}
-
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["VisionCameraFaceDetection_" + name]).toInteger()
 }
@@ -82,13 +78,12 @@ repositories {
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
 dependencies {
-  implementation "com.facebook.react:react-android"
+  compileOnly "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  api project(":react-native-vision-camera")
+  compileOnly project(":react-native-vision-camera")
   implementation "androidx.annotation:annotation:1.9.1"
   implementation "androidx.camera:camera-core:1.5.2"
   implementation "com.google.mlkit:face-detection:16.1.7"
   implementation 'com.google.ai.edge.litert:litert:1.4.1'
   implementation 'com.google.ai.edge.litert:litert-support:1.4.1'
 }
-
