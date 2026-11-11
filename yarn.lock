@@ -3075,12 +3075,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/prop-types@npm:*":
+  version: 15.7.15
+  resolution: "@types/prop-types@npm:15.7.15"
+  checksum: 31aa2f59b28f24da6fb4f1d70807dae2aedfce090ec63eaf9ea01727a9533ef6eaf017de5bff99fbccad7d1c9e644f52c6c2ba30869465dd22b1a7221c29f356
+  languageName: node
+  linkType: hard
+
 "@types/react@npm:^19.2.0":
-  version: 19.3.0
-  resolution: "@types/react@npm:19.3.0"
+  version: 18.3.31
+  resolution: "@types/react@npm:18.3.31"
   dependencies:
+    "@types/prop-types": "*"
     csstype: ^3.2.2
-  checksum: 1cc51d4b76e5855da231e8b5afbde76db000eb3fffa5a8087a93eef1c168e86f90d10b7dae08dabf7a6ac327a254604406e6ede45c952d39d24dd0da6f856790
+  checksum: fe17985f3debdc83e1804102b51e0a59ba64295c2f10de92ba8c7c8276b70ac3b11bf19870d31279feaa20b00e8d77fa7a17852137a2beba8fad45350bc66d76
   languageName: node
   linkType: hard
 
@@ -5251,9 +5259,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.464":
-  version: 1.5.479
-  resolution: "electron-to-chromium@npm:1.5.479"
-  checksum: 3d9d544d11873cd78e3c69d5fe17d3594f0345f0999ec41e91d4947191c87a52dd85f4bb7202fe3c187cb385bfeb692a4fd9b63e175509b8495fa9817354bed6
+  version: 1.5.481
+  resolution: "electron-to-chromium@npm:1.5.481"
+  checksum: ac156243fec95d40488a244c1b786e8805c44240a6fd6b4a78677bb56c752d23880b96281285ac865430630c4dbc02489615d9624e68168747cd0d158a6b0a79
   languageName: node
   linkType: hard
 
