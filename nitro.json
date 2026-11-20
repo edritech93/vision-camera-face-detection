@@ -1,0 +1,33 @@
+{
+  "cxxNamespace": ["visioncamerafacedetection"],
+  "ios": {
+    "iosModuleName": "VisionCameraFaceDetection"
+  },
+  "android": {
+    "androidNamespace": ["visioncamerafacedetection"],
+    "androidCxxLibName": "visioncamerafacedetection"
+  },
+  "autolinking": {
+    "FaceScannerFactory": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridFaceScannerFactory"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridFaceScannerFactory"
+      }
+    },
+    "TensorFactory": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridTensorFactory"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridTensorFactory"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules", "example"]
+}
