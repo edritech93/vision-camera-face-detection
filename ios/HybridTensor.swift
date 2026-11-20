@@ -23,6 +23,7 @@ class HybridTensor: HybridTensorFactorySpec {
       options.threadCount = 1
       interpreter = try Interpreter(modelPath: modelPath, options: options)
       try interpreter?.allocateTensors()
+      currentTensorModel = TensorModel(rawValue: modelName) ?? .mobileFaceNet
       return "initialization tflite success"
     } catch let error {
       throw error
@@ -42,7 +43,6 @@ class HybridTensor: HybridTensorFactorySpec {
     let faceDetector = FaceDetector.faceDetector(
       options: options.toMLFaceDetectorOptions()
     )
-    let tensorModel = options.tensorModel ?? currentTensorModel
     guard let stringData = Data(base64Encoded: options.base64Image) else {
       throw RuntimeError.error(
         withMessage: "Error base64 encoded"
@@ -85,7 +85,7 @@ class HybridTensor: HybridTensorFactorySpec {
         else {
       throw RuntimeError.error(withMessage: "Failed to crop face image")
     }
-    let tensorConfig = tensorModelConfig(for: tensorModel)
+    let tensorConfig = tensorModelConfig(for: currentTensorModel)
     guard
       let pixelBuffer = FaceHelper.uiImageToPixelBuffer(
         image: imageCrop,
