@@ -15,6 +15,7 @@ import java.nio.ByteBuffer
 import kotlin.math.ceil
 
 var interpreter: Interpreter? = null
+
 enum class TensorModel(val modelName: String) {
   MOBILE_FACE_NET("mobile_face_net"),
   FACENET_512("facenet_512");

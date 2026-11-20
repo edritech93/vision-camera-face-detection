@@ -68,7 +68,8 @@ class HybridFaceScannerOutput(
   // Lower analysis resolution improves FPS and reduces CPU/GPU usage.
   private val recommendedResolutionForBarcodeScanning = Size(640, 480)
   private val embeddingMinIntervalMs = 240L
-  private val embeddingOutputBuffer: FloatBuffer = FloatBuffer.allocate(512)
+  val tensorModelConfig = getCurrentTensorModelConfig()
+  private val output: FloatBuffer = FloatBuffer.allocate(tensorModelConfig.outputSize)
   private var lastEmbeddingAtMs = 0L
   private var lastEmbeddingData: Array<String> = emptyArray()
 
@@ -177,10 +178,9 @@ class HybridFaceScannerOutput(
             cvFace.drawBitmap(bmpFrameResult, matrix, null)
             val input: ByteBuffer =
               faceHelper.bitmap2ByteBuffer(bmpFaceResult, tensorModelConfig.inputSize)
-            embeddingOutputBuffer.clear()
-            interpreter?.run(input, embeddingOutputBuffer)
-            lastEmbeddingData =
-              embeddingOutputBuffer.array().map { value -> value.toString() }.toTypedArray()
+            output.clear()
+            interpreter?.run(input, output)
+            lastEmbeddingData = output.array().map { value -> value.toString() }.toTypedArray()
             lastEmbeddingAtMs = nowMs
           }
           val hybridFaces =

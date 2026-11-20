@@ -15,6 +15,7 @@ import com.margelo.nitro.core.NullType
 import com.margelo.nitro.visioncamerafacedetection.extensions.FaceHelper
 import com.margelo.nitro.visioncamerafacedetection.extensions.getCurrentTensorModelConfig
 import com.margelo.nitro.visioncamerafacedetection.extensions.interpreter
+import com.margelo.nitro.visioncamerafacedetection.extensions.setCurrentTensorModel
 import com.margelo.nitro.visioncamerafacedetection.extensions.toMLFaceDetectorOptions
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
@@ -41,6 +42,7 @@ class HybridTensor : HybridTensorFactorySpec() {
     options.numThreads = 1
     interpreter = Interpreter(byteFile, options)
     interpreter?.allocateTensors()
+    setCurrentTensorModel(modelName)
     return "initialization $modelName.tflite success"
   }
 
