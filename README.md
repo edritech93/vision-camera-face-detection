@@ -12,7 +12,7 @@ Face Detection plugin for [react-native-vision-camera](https://github.com/mrousa
 - `react-native` >= 0.85
 - `react-native-vision-camera` >= 5
 - `react-native-nitro-modules` >= 0.35.6
-- iOS 13+ / Android `minSdkVersion` 24+
+- iOS 15.5+ / Android `minSdkVersion` 24+
 
 ## Installation
 
