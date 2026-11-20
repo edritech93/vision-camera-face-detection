@@ -23,7 +23,8 @@ import com.margelo.nitro.camera.MirrorMode
 import com.margelo.nitro.camera.extensions.surfaceRotation
 import com.margelo.nitro.camera.public.NativeCameraOutput
 import com.margelo.nitro.visioncamerafacedetection.extensions.FaceHelper
-import com.margelo.nitro.visioncamerafacedetection.extensions.getCurrentTensorModelConfig
+import com.margelo.nitro.visioncamerafacedetection.extensions.currentTensorModel
+import com.margelo.nitro.visioncamerafacedetection.extensions.getTensorModelConfig
 import com.margelo.nitro.visioncamerafacedetection.extensions.interpreter
 import com.margelo.nitro.visioncamerafacedetection.extensions.toMLFaceDetectorOptions
 import java.nio.ByteBuffer
@@ -56,6 +57,7 @@ class HybridFaceScannerOutput(
   private val cameraFacing: CameraPosition = options.cameraFacing ?: CameraPosition.FRONT
   private val windowWidth = options.windowWidth ?: 1.0
   private val windowHeight = options.windowHeight ?: 1.0
+  private val tensorModel = options.tensorModel ?: currentTensorModel
   private val faceDetector = FaceDetection.getClient(
     options.toMLFaceDetectorOptions()
   )
@@ -68,7 +70,7 @@ class HybridFaceScannerOutput(
   // Lower analysis resolution improves FPS and reduces CPU/GPU usage.
   private val recommendedResolutionForBarcodeScanning = Size(640, 480)
   private val embeddingMinIntervalMs = 240L
-  val tensorModelConfig = getCurrentTensorModelConfig()
+  private val tensorModelConfig = getTensorModelConfig(tensorModel)
   private val output: FloatBuffer = FloatBuffer.allocate(tensorModelConfig.outputSize)
   private var lastEmbeddingAtMs = 0L
   private var lastEmbeddingData: Array<String> = emptyArray()
@@ -161,7 +163,6 @@ class HybridFaceScannerOutput(
           val shouldRefreshEmbedding =
             nowMs - lastEmbeddingAtMs >= embeddingMinIntervalMs || lastEmbeddingData.isEmpty()
           if (shouldRefreshEmbedding) {
-            val tensorModelConfig = getCurrentTensorModelConfig()
             val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(inputImage)
             val bmpFaceResult = createBitmap(
               tensorModelConfig.inputSize,

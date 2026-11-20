@@ -10,20 +10,15 @@ import TensorFlowLite
 let batchSize = 1
 let inputChannels = 1
 
-enum TensorModel: String {
-  case mobileFaceNet = "mobile_face_net"
-  case facenet512 = "facenet_512"
-}
-
 struct TensorModelConfig {
   let inputWidth: Int
   let inputHeight: Int
   let outputSize: Int
 }
 
-var currentTensorModel: TensorModel = .mobileFaceNet
+var currentTensorModel: TensorModelEnum = .mobileFaceNet
 
-func tensorModelConfig(for model: TensorModel) -> TensorModelConfig {
+func tensorModelConfig(for model: TensorModelEnum) -> TensorModelConfig {
   switch model {
   case .mobileFaceNet:
     return TensorModelConfig(inputWidth: 112, inputHeight: 112, outputSize: 192)

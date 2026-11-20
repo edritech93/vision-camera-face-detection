@@ -13,7 +13,8 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.margelo.nitro.NitroModules
 import com.margelo.nitro.core.NullType
 import com.margelo.nitro.visioncamerafacedetection.extensions.FaceHelper
-import com.margelo.nitro.visioncamerafacedetection.extensions.getCurrentTensorModelConfig
+import com.margelo.nitro.visioncamerafacedetection.extensions.currentTensorModel
+import com.margelo.nitro.visioncamerafacedetection.extensions.getTensorModelConfig
 import com.margelo.nitro.visioncamerafacedetection.extensions.interpreter
 import com.margelo.nitro.visioncamerafacedetection.extensions.setCurrentTensorModel
 import com.margelo.nitro.visioncamerafacedetection.extensions.toMLFaceDetectorOptions
@@ -73,7 +74,7 @@ class HybridTensor : HybridTensorFactorySpec() {
       return Variant_HybridFaceSpec_NullType.create(NullType.NULL)
     }
     val face = faces[0]
-    val tensorModelConfig = getCurrentTensorModelConfig()
+    val tensorModelConfig = getTensorModelConfig(options.tensorModel ?: currentTensorModel)
     val bmpFaceStorage =
       createBitmap(
         tensorModelConfig.inputSize,

@@ -5,6 +5,7 @@ import android.graphics.Rect
 import android.util.Base64
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceContour
+import com.margelo.nitro.visioncamerafacedetection.TensorModelEnum
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
@@ -16,41 +17,26 @@ import kotlin.math.ceil
 
 var interpreter: Interpreter? = null
 
-enum class TensorModel(val modelName: String) {
-  MOBILE_FACE_NET("mobile_face_net"),
-  FACENET_512("facenet_512");
-
-  companion object {
-    fun from(modelName: String?): TensorModel {
-      return when (modelName) {
-        FACENET_512.modelName -> FACENET_512
-        else -> MOBILE_FACE_NET
-      }
-    }
-  }
-}
-
 data class TensorModelConfig(
   val inputSize: Int,
   val outputSize: Int
 )
 
 @Volatile
-var currentTensorModel = TensorModel.MOBILE_FACE_NET
+var currentTensorModel = TensorModelEnum.MOBILE_FACE_NET
 
 fun setCurrentTensorModel(modelName: String?) {
-  currentTensorModel = TensorModel.from(modelName)
-}
-
-fun getTensorModelConfig(model: TensorModel): TensorModelConfig {
-  return when (model) {
-    TensorModel.MOBILE_FACE_NET -> TensorModelConfig(inputSize = 112, outputSize = 192)
-    TensorModel.FACENET_512 -> TensorModelConfig(inputSize = 160, outputSize = 512)
+  currentTensorModel = when (modelName) {
+    "facenet_512" -> TensorModelEnum.FACENET_512
+    else -> TensorModelEnum.MOBILE_FACE_NET
   }
 }
 
-fun getCurrentTensorModelConfig(): TensorModelConfig {
-  return getTensorModelConfig(currentTensorModel)
+fun getTensorModelConfig(model: TensorModelEnum): TensorModelConfig {
+  return when (model) {
+    TensorModelEnum.MOBILE_FACE_NET -> TensorModelConfig(inputSize = 112, outputSize = 192)
+    TensorModelEnum.FACENET_512 -> TensorModelConfig(inputSize = 160, outputSize = 512)
+  }
 }
 
 class FaceHelper {

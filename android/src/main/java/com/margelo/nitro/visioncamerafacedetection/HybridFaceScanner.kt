@@ -12,7 +12,8 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.margelo.nitro.NitroModules
 import com.margelo.nitro.camera.HybridFrameSpec
 import com.margelo.nitro.visioncamerafacedetection.extensions.FaceHelper
-import com.margelo.nitro.visioncamerafacedetection.extensions.getCurrentTensorModelConfig
+import com.margelo.nitro.visioncamerafacedetection.extensions.currentTensorModel
+import com.margelo.nitro.visioncamerafacedetection.extensions.getTensorModelConfig
 import com.margelo.nitro.visioncamerafacedetection.extensions.interpreter
 import com.margelo.nitro.visioncamerafacedetection.extensions.toInputImage
 import com.margelo.nitro.visioncamerafacedetection.extensions.toMLFaceDetectorOptions
@@ -34,6 +35,7 @@ class HybridFaceScanner(
   private val cameraFacing: CameraPosition = options.cameraFacing ?: CameraPosition.FRONT
   private val windowWidth = options.windowWidth ?: 1.0
   private val windowHeight = options.windowHeight ?: 1.0
+  private val tensorModel = options.tensorModel ?: currentTensorModel
   private val faceDetector = FaceDetection.getClient(
     options.toMLFaceDetectorOptions()
   )
@@ -62,7 +64,7 @@ class HybridFaceScanner(
     )
     val task = faceDetector.process(image)
     val faces = Tasks.await(task).map {
-      val tensorModelConfig = getCurrentTensorModelConfig()
+      val tensorModelConfig = getTensorModelConfig(tensorModel)
       val bmpFrameResult = ImageConvertUtils.getInstance().getUpRightBitmap(image)
       val bmpFaceResult =
         createBitmap(

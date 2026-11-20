@@ -23,8 +23,8 @@ class HybridTensor: HybridTensorFactorySpec {
       options.threadCount = 1
       interpreter = try Interpreter(modelPath: modelPath, options: options)
       try interpreter?.allocateTensors()
-      currentTensorModel = TensorModel(rawValue: modelName) ?? .mobileFaceNet
-      return "initialization tflite success"
+      currentTensorModel = TensorModelEnum(fromString: modelName) ?? .mobileFaceNet
+      return "initialization model \(modelName).tflite success"
     } catch let error {
       throw error
     }
@@ -85,7 +85,9 @@ class HybridTensor: HybridTensorFactorySpec {
         else {
       throw RuntimeError.error(withMessage: "Failed to crop face image")
     }
-    let tensorConfig = tensorModelConfig(for: currentTensorModel)
+    let tensorConfig = tensorModelConfig(
+      for: options.tensorModel ?? currentTensorModel
+    )
     guard
       let pixelBuffer = FaceHelper.uiImageToPixelBuffer(
         image: imageCrop,

@@ -24,6 +24,7 @@ import {
   type Face,
   type FaceScannerOptions,
   type TensorFaceOptions,
+  TensorModelEnum,
 } from 'vision-camera-face-detection';
 import Animated, {
   useAnimatedProps,
@@ -50,6 +51,10 @@ export default function App() {
   const [dataSample, setDataSample] = useState<number[]>([]);
   const [imageSample, setImageSample] = useState<string>('');
   const [capturedPhotoUri, setCapturedPhotoUri] = useState<string>('');
+  const [tensorModel, setTensorModel] = useState<TensorModelEnum>(
+    TensorModelEnum.MobileFaceNet
+  );
+
   const distanceNum = useSharedValue<number>(2);
   const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -151,10 +156,9 @@ export default function App() {
   }, [hasPermission, requestPermission]);
 
   useEffect(() => {
-    if (!hasPermission) return;
-    const result = initTensor('facenet_512');
+    const result = initTensor(tensorModel);
     console.log(`Tensor initialized with result: ${result}`);
-  }, [hasPermission]);
+  }, [tensorModel]);
 
   async function _capturePhoto() {
     try {
@@ -269,6 +273,21 @@ export default function App() {
             {!cameraMounted && (
               <View style={styles.wrapCenter}>
                 <Text style={styles.textNoMounted}>Camera is NOT mounted</Text>
+                <Text style={styles.textModelInfo}>
+                  Selected model: {tensorModel}
+                </Text>
+                <View style={styles.wrapBtn}>
+                  <Button
+                    title={'Use mobile_face_net'}
+                    onPress={() =>
+                      setTensorModel(TensorModelEnum.MobileFaceNet)
+                    }
+                  />
+                  <Button
+                    title={'Use facenet_512'}
+                    onPress={() => setTensorModel(TensorModelEnum.FaceNet512)}
+                  />
+                </View>
                 <Button
                   title={'Pick Image Sample'}
                   onPress={() => _pickImageSample()}
@@ -413,5 +432,10 @@ const styles = StyleSheet.create({
     width: 90,
     borderRadius: 6,
     backgroundColor: 'black',
+  },
+  textModelInfo: {
+    marginTop: 8,
+    marginBottom: 8,
+    color: 'cyan',
   },
 });

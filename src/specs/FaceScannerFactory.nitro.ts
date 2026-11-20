@@ -8,7 +8,7 @@ import type { Face } from './Face.nitro';
  * Model to be used for face detection.
  * default: MobileFaceNet
  */
-export enum TensorModel {
+export enum TensorModelEnum {
   MobileFaceNet = 'mobile_face_net',
   FaceNet512 = 'facenet_512',
 }
@@ -47,9 +47,9 @@ export interface FaceScannerOptions extends ImageFaceDetectorOptions {
   /**
    * Tensor model to be used for face detection.
    *
-   * @default currentTensorModel
+   * @default MobileFaceNet
    */
-  tensorModel?: TensorModel;
+  tensorModel?: TensorModelEnum;
 }
 
 /**

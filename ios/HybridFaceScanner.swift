@@ -14,7 +14,7 @@ class HybridFaceScanner: HybridFaceScannerSpec {
   private let windowWidth: Double
   private let windowHeight: Double
   private let faceDetector: FaceDetector
-  private var tensorModel: TensorModel = currentTensorModel
+  private let tensorModel: TensorModelEnum
   
   init(options: FaceScannerOptions) {
     self.runLandmarks = options.runLandmarks ?? false
